@@ -1,0 +1,2 @@
+#!/bin/bash
+gunicorn -w4 -b127.0.0.1:9680 condor_restd:app

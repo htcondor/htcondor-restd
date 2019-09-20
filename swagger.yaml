@@ -1,0 +1,377 @@
+swagger: "2.0"
+info:
+  title: HTCondor REST API
+  version: "1.0.0"
+
+host: localhost:9680
+basePath: /v1
+schemes:
+  - http
+
+tags:
+  - name: jobs
+    description: Access to jobs, past and present
+  - name: status
+    description: Access to status of machines and daemons
+  - name: config
+    description: Access to config
+
+responses:
+  jobsOK:
+    description: OK
+    schema:
+      type: array
+      items:
+        type: object
+        properties:
+          jobid:
+            description: The ClusterID.ProcID of a job, such as `52.5`.
+            type: string
+          classad:
+            description: >-
+              The classad of the job, with attribute names lowercased.
+              `projection` can limit which attributes are present.
+            type: object
+  statusOK:
+    description: OK
+    schema:
+      type: array
+      items:
+        type: object
+        properties:
+          name:
+            description: >-
+              The name of the queried object, such as the slot name for
+              machine (startd) ads.
+            type: string
+          classad:
+            description: >-
+              The classad of the object, with attribute names lowercased.
+              `projection` can limit which attributes are present.
+            type: object
+
+parameters:
+  projection:
+    in: query
+    name: projection
+    type: array
+    collectionFormat: csv
+    items:
+      type: string
+    description: Subset of classad attributes to return
+  constraint:
+    in: query
+    name: constraint
+    type: string
+    description: Classad expression to restrict the query
+  statusQuery:
+    in: query
+    name: query
+    type: string
+    description: Type of classad to query
+    enum:
+      - accounting
+      - any
+      - collector
+      - credd
+      - defrag
+      - generic
+      - grid
+      - had
+      - license
+      - master
+      - negotiator
+      - schedd
+      - startd
+      - submitter
+      - submitters
+        # ^ Original API & command-line tools used "submitters"
+  configDaemon:
+    in: query
+    name: daemon
+    type: string
+    description: Daemon to query
+    enum:
+      - collector
+      - master
+      - negotiator
+      - schedd
+      - startd
+
+paths:
+  /jobs:
+    get:
+      summary: Returns information for all jobs in the queue.
+      tags: [jobs]
+      produces: ["application/json"]
+      parameters:
+        - $ref: "#/parameters/projection"
+        - $ref: "#/parameters/constraint"
+      responses:
+        200:
+          $ref: "#/responses/jobsOK"
+        400:
+          description: Invalid argument(s)
+          schema:
+            type: string
+  /jobs/{cluster}:
+    get:
+      summary: Returns information for jobs in the given cluster in the queue.
+      tags: [jobs]
+      produces: ["application/json"]
+      parameters:
+        - in: path
+          name: cluster
+          type: integer
+          minimum: 0
+          description: The ClusterId of the jobs to return info for
+          required: true
+        - $ref: "#/parameters/projection"
+        - $ref: "#/parameters/constraint"
+      responses:
+        200:
+          $ref: "#/responses/jobsOK"
+        400:
+          description: Invalid argument(s)
+          schema:
+            type: string
+  /jobs/{cluster}/{proc}:
+    get:
+      summary: Returns information for a single job in the given cluster and proc in the queue
+      tags: [jobs]
+      produces: ["application/json"]
+      parameters:
+        - in: path
+          name: cluster
+          type: integer
+          minimum: 0
+          description: The ClusterId of the job to return info for
+          required: true
+        - in: path
+          name: proc
+          type: integer
+          minimum: -1
+          description: The ProcId of the job to return info for
+          required: true
+        - $ref: "#/parameters/projection"
+        - $ref: "#/parameters/constraint"
+      responses:
+        200:
+          $ref: "#/responses/jobsOK"
+        400:
+          description: Invalid argument(s)
+          schema:
+            type: string
+  /jobs/{cluster}/{proc}/{attr}:
+    get:
+      summary: Returns a single attribute of the given job in the queue.
+      tags: [jobs]
+      produces: ["application/json"]
+      parameters:
+        - in: path
+          name: cluster
+          type: integer
+          minimum: 0
+          description: The ClusterId of the job to return info for
+          required: true
+        - in: path
+          name: proc
+          type: integer
+          minimum: -1
+          description: The ProcId of the job to return info for
+          required: true
+        - in: path
+          name: attr
+          type: string
+          description: The classad attribute to return
+          required: true
+        - $ref: "#/parameters/constraint"
+      responses:
+        200:
+          description: OK
+        400:
+          description: Invalid argument(s)
+          schema:
+            type: string
+        404:
+          description: No matching ads
+  /history:
+    get:
+      summary: Returns information for all jobs in the job history.
+      tags: [jobs]
+      produces: ["application/json"]
+      parameters:
+        - $ref: "#/parameters/projection"
+        - $ref: "#/parameters/constraint"
+      responses:
+        200:
+          $ref: "#/responses/jobsOK"
+        400:
+          description: Invalid argument(s)
+          schema:
+            type: string
+  /history/{cluster}:
+    get:
+      summary: Returns information for jobs in the given cluster in the job history.
+      tags: [jobs]
+      produces: ["application/json"]
+      parameters:
+        - in: path
+          name: cluster
+          type: integer
+          minimum: 0
+          description: The ClusterId of the jobs to return info for
+          required: true
+        - $ref: "#/parameters/projection"
+        - $ref: "#/parameters/constraint"
+      responses:
+        200:
+          $ref: "#/responses/jobsOK"
+        400:
+          description: Invalid argument(s)
+          schema:
+            type: string
+  /history/{cluster}/{proc}:
+    get:
+      summary: Returns information for a single job in the given cluster and proc in the job history.
+      tags: [jobs]
+      produces: ["application/json"]
+      parameters:
+        - in: path
+          name: cluster
+          type: integer
+          minimum: 0
+          description: The ClusterId of the job to return info for
+          required: true
+        - in: path
+          name: proc
+          type: integer
+          minimum: -1
+          description: The ProcId of the job to return info for
+          required: true
+        - $ref: "#/parameters/projection"
+        - $ref: "#/parameters/constraint"
+      responses:
+        200:
+          $ref: "#/responses/jobsOK"
+        400:
+          description: Invalid argument(s)
+          schema:
+            type: string
+  /history/{cluster}/{proc}/{attr}:
+    get:
+      summary: Returns a single attribute of the given job in the job history.
+      tags: [jobs]
+      produces: ["application/json"]
+      parameters:
+        - in: path
+          name: cluster
+          type: integer
+          minimum: 0
+          description: The ClusterId of the job to return info for
+          required: true
+        - in: path
+          name: proc
+          type: integer
+          minimum: -1
+          description: The ProcId of the job to return info for
+          required: true
+        - in: path
+          name: attr
+          type: string
+          description: The classad attribute to return
+          required: true
+        - $ref: "#/parameters/constraint"
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        400:
+          description: Invalid argument(s)
+          schema:
+            type: string
+        404:
+          description: No matching ads
+  /status:
+    get:
+      summary: Returns condor_status information
+      tags: [status]
+      produces: ["application/json"]
+      parameters:
+        - $ref: "#/parameters/projection"
+        - $ref: "#/parameters/constraint"
+        - $ref: "#/parameters/statusQuery"
+      responses:
+        200:
+          $ref: "#/responses/statusOK"
+        400:
+          description: Invalid argument(s)
+          schema:
+            type: string
+  /status/{name}:
+    get:
+      summary: Returns condor_status information for the ad with the given Name
+      tags: [status]
+      produces: ["application/json"]
+      parameters:
+        - in: path
+          name: name
+          type: string
+          minimum: 0
+          description: The Name of the associated ad
+          required: true
+        - $ref: "#/parameters/projection"
+        - $ref: "#/parameters/constraint"
+        - $ref: "#/parameters/statusQuery"
+      responses:
+        200:
+          $ref: "#/responses/statusOK"
+        400:
+          description: Invalid argument(s)
+          schema:
+            type: string
+  /config:
+    get:
+      summary: Returns condor config information
+      tags: [config]
+      produces: ["application/json"]
+      parameters:
+        - $ref: "#/parameters/configDaemon"
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            description: >-
+              The parameter table, with the param names lowercased.
+        400:
+          description: Invalid argument(s)
+          schema:
+            type: string
+  /config/{attr}:
+    get:
+      summary: Returns the value of a specific config attribute
+      tags: [config]
+      produces: ["application/json"]
+      parameters:
+        - in: path
+          name: attr
+          type: string
+          description: The classad attribute to return
+          required: true
+        - $ref: "#/parameters/configDaemon"
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+        400:
+          description: Invalid argument(s)
+          schema:
+            type: string
+        404:
+          description: Attribute not found
+          schema:
+            type: string
+
