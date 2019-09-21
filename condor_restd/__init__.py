@@ -305,7 +305,8 @@ class V1StatusResource(Resource):
             )
         except RuntimeError as err:
             abort(503, message=FAIL_QUERY % {"service": "collector", "err": err})
-
+        if not classads:
+            abort(404, message=NO_CLASSADS)
         data = [
             {"name": ad["name"], "classad": ad}
             for ad in utils.classads_to_dicts(classads)

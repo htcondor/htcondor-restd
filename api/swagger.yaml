@@ -357,6 +357,10 @@ paths:
           description: Invalid argument(s)
           schema:
             $ref: "#/definitions/error"
+        404:
+          description: No matching classads
+          schema:
+            $ref: "#/definitions/error"
   /status/{name}:
     get:
       summary: Returns condor_status information for the ad with the given Name
@@ -377,6 +381,10 @@ paths:
           $ref: "#/responses/statusOK"
         400:
           description: Invalid argument(s)
+          schema:
+            $ref: "#/definitions/error"
+        404:
+          description: No matching classads
           schema:
             $ref: "#/definitions/error"
   /config:
