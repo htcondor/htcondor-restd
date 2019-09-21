@@ -32,6 +32,19 @@ responses:
               The classad of the job, with attribute names lowercased.
               `projection` can limit which attributes are present.
             type: object
+  oneJobOK:
+    description: OK
+    schema:
+      type: object
+      properties:
+        jobid:
+          description: The ClusterID.ProcID of a job, such as `52.5`.
+          type: string
+        classad:
+          description: >-
+            The classad of the job, with attribute names lowercased.
+            `projection` can limit which attributes are present.
+          type: object
   statusOK:
     description: OK
     schema:
@@ -135,6 +148,10 @@ paths:
           description: Invalid argument(s)
           schema:
             type: string
+        404:
+          description: No jobs with that ClusterId
+          schema:
+            type: string
   /jobs/{cluster}/{proc}:
     get:
       summary: Returns information for a single job in the given cluster and proc in the queue
@@ -157,9 +174,13 @@ paths:
         - $ref: "#/parameters/constraint"
       responses:
         200:
-          $ref: "#/responses/jobsOK"
+          $ref: "#/responses/oneJobOK"
         400:
           description: Invalid argument(s)
+          schema:
+            type: string
+        404:
+          description: No jobs with that ClusterId.ProcId
           schema:
             type: string
   /jobs/{cluster}/{proc}/{attr}:
@@ -194,7 +215,9 @@ paths:
           schema:
             type: string
         404:
-          description: No matching ads
+          description: No matching jobs or no matching attribute
+          schema:
+            type: string
   /history:
     get:
       summary: Returns information for all jobs in the job history.
@@ -231,6 +254,10 @@ paths:
           description: Invalid argument(s)
           schema:
             type: string
+        404:
+          description: No jobs with that ClusterId
+          schema:
+            type: string
   /history/{cluster}/{proc}:
     get:
       summary: Returns information for a single job in the given cluster and proc in the job history.
@@ -253,9 +280,13 @@ paths:
         - $ref: "#/parameters/constraint"
       responses:
         200:
-          $ref: "#/responses/jobsOK"
+          $ref: "#/responses/oneJobOK"
         400:
           description: Invalid argument(s)
+          schema:
+            type: string
+        404:
+          description: No jobs with that ClusterId.ProcId
           schema:
             type: string
   /history/{cluster}/{proc}/{attr}:
@@ -292,7 +323,9 @@ paths:
           schema:
             type: string
         404:
-          description: No matching ads
+          description: No matching jobs or no matching attribute
+          schema:
+            type: string
   /status:
     get:
       summary: Returns condor_status information
@@ -374,4 +407,3 @@ paths:
           description: Attribute not found
           schema:
             type: string
-

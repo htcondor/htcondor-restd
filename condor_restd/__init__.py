@@ -10,7 +10,7 @@ import re
 import json
 
 try:
-    from typing import Dict, List
+    from typing import Dict, List, Optional
 except ImportError:
     pass
 
@@ -47,67 +47,87 @@ class JobsBaseResource(Resource):
 
     querytype = None
 
-    def query(self, clusterid, procid, constraint, projection, attribute):
+    def _query_common(self, id_requirements, constraint, projection):
+        # type: (str, str, str) -> List[Dict]
         schedd = utils.get_schedd()
-        requirements = "true"
-        if clusterid:
-            requirements += " && clusterid==%d" % clusterid
-        if procid:
-            requirements += " && procid==%d" % procid
-        if constraint:
-            requirements += " && %s" % constraint
-
-        if attribute:
-            if not validate_attribute(attribute):
-                abort(400, message="Invalid attribute")
-            projection = [attribute, "clusterid", "procid"]
-        elif projection:
+        projection_list = []
+        if projection:
             if not validate_projection(projection):
-                abort(
-                    400,
-                    message="Invalid projection: must be a comma-separated list of classad attributes",
-                )
-            projection = set(projection.split(","))
-            projection.add("clusterid")
-            projection.add("procid")
-        else:
-            projection = set()
+                abort(400, message="Invalid attribute or projection")
+            projection_list = list(set(["clusterid", "procid"] + projection.split(",")))
 
         if self.querytype == "history":
-            classads = schedd.history(
-                requirements=requirements, projection=list(projection)
-            )
+            method = schedd.history
         elif self.querytype == "xquery":
-            classads = schedd.xquery(
-                requirements=requirements, projection=list(projection)
-            )
+            method = schedd.xquery
         else:
             assert False, "Invalid querytype %r" % self.querytype
 
+        requirements = id_requirements or "true"
+        if constraint:
+            requirements += " && " + constraint
+        classads = method(requirements=requirements, projection=projection_list)
+        if id_requirements and not classads:
+            # No classads found.  Did the constraint not match or does the cluster.proc
+            # not exist in the first place?
+            id_classads = method(requirements=id_requirements, projection=[])
+            if not id_classads:
+                abort(404, message="No matching jobs")
+
+        return utils.classads_to_dicts(classads)
+
+    def query_multi(self, clusterid=None, constraint=None, projection=None):
+        # type: (int, str, str) -> List[Dict]
+        id_requirements = ""
+        if clusterid is not None:
+            id_requirements = "clusterid==%d" % clusterid
+        ad_dicts = self._query_common(id_requirements, constraint, projection)
+
         data = []
-        ad_dicts = utils.classads_to_dicts(classads)
         for ad in ad_dicts:
-            if attribute:
-                return ad.get(attribute.lower(), None)
-            job_data = dict()
-            job_data["classad"] = ad
-            job_data["jobid"] = "%s.%s" % (ad["clusterid"], ad["procid"])
-            data.append(job_data)
-        if attribute:
-            abort(404, message="No matching ads")
+            data.append(
+                dict(classad=ad, jobid="%s.%s" % (ad["clusterid"], ad["procid"]))
+            )
+
         return data
+
+    def query_single(self, clusterid, procid, constraint=None, projection=None):
+        # type: (int, int, str, str) -> Optional[Dict]
+        id_requirements = "clusterid==%d && procid==%d" % (clusterid, procid)
+        ad_dicts = self._query_common(id_requirements, constraint, projection)
+        if ad_dicts:
+            ad = ad_dicts[0]
+            return dict(classad=ad, jobid="%s.%s" % (ad["clusterid"], ad["procid"]))
+
+    def query_attribute(self, clusterid, procid, attribute, constraint=None):
+        # type: (int, int, str, str) -> Optional[str]
+        q = self.query_single(clusterid, procid, constraint, projection=attribute)
+        if not q:
+            abort(404, message="No matching jobs")
+        l_attribute = attribute.lower()
+        if l_attribute in q["classad"]:
+            return q["classad"][l_attribute]
+        else:
+            abort(404, message="No such attribute")
 
     def get(self, clusterid=None, procid=None, attribute=None):
         parser = reqparse.RequestParser(trim=True)
         parser.add_argument("projection", default="")
-        parser.add_argument("constraint", default="")
+        parser.add_argument("constraint", default="true")
         args = parser.parse_args()
-        return self.query(
-            clusterid,
-            procid,
-            projection=args.projection,
-            constraint=args.constraint,
-            attribute=attribute,
+        if attribute:
+            return self.query_attribute(
+                clusterid, procid, attribute, constraint=args.constraint
+            )
+        if procid is not None:
+            return self.query_single(
+                clusterid,
+                procid,
+                constraint=args.constraint,
+                projection=args.projection,
+            )
+        return self.query_multi(
+            clusterid, constraint=args.constraint, projection=args.projection
         )
 
 
@@ -119,18 +139,21 @@ class V1JobsResource(JobsBaseResource):
         GET /v1/jobs{/clusterid}{/procid}{/attribute}{?projection,constraint}
 
         If `clusterid`, `procid`, and `attribute` are specified, then it
-        returns the value of that attribute.  Otherwise it returns an array
-        of one or more objects of the form:
+        returns the value of that attribute, or null if the attribute is
+        missing or undefined.
+
+        If `attribute` is not specified, job object(s) will be returned,
+        which have the form:
 
             {
               "jobid": "123.45",
               "classad": { (json-encoded classad object) }
             }
 
-        If `clusterid` and `procid` are specified, then the array will contain
-        a single job.  If only `clusterid` is specified, then the array will
-        contain all jobs within that cluster.  If none of these are specified,
-        the array will contain all jobs in the queue.
+        If `clusterid` and `procid` are specified, then the result will be a
+        single job.  If only `clusterid` is specified, then the result will
+        be an array of all jobs within that cluster.  If none of these are
+        specified, the result will be an of all jobs in the queue.
 
         `projection` is one or more comma-separated attributes; if specified,
         only those attributes, plus `clusterid` and `procid` will be in the
@@ -163,7 +186,9 @@ class V1HistoryResource(JobsBaseResource):
             }
 
         If `clusterid` and `procid` are specified, then the array will contain
-        a single job.  If only `clusterid` is specified, then the array will
+        a single job.
+
+        If only `clusterid` is specified, then the array will
         contain all jobs within that cluster.  If none of these are specified,
         the array will contain all jobs in the history.
 

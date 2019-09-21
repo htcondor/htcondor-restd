@@ -27,9 +27,10 @@ def get(uri, params=None):
 
 def checked_get(uri, params=None):
     r = get(uri, params=params)
-    assert 200 <= r.status_code < 400, "GET %s%s failed" % (
+    assert 200 <= r.status_code < 400, "GET %s%s failed%s" % (
         uri,
         " with params %r" % params if params else "",
+        " with message %r" % r.text if r.text else "",
     )
     return r
 
@@ -80,9 +81,9 @@ def _test_jobs_queries(cluster_id, endpoint):
         "v1/%s/%d" % (endpoint, cluster_id),
         "v1/%s/%d/0" % (endpoint, cluster_id),
     ]
-    for q in queries:
-        j = checked_get_json(q)
-        check_job_attrs(j[0])
+    check_job_attrs(checked_get_json("v1/%s" % endpoint)[0])
+    check_job_attrs(checked_get_json("v1/%s/%d" % (endpoint, cluster_id))[0])
+    check_job_attrs(checked_get_json("v1/%s/%d/0" % (endpoint, cluster_id)))
     j = checked_get_json("v1/%s/%d/0/cmd" % (endpoint, cluster_id))
     assert j == "/usr/bin/sleep", "%s: cmd attribute does not match" % endpoint
 
