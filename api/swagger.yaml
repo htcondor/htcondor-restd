@@ -184,7 +184,6 @@ paths:
           description: The ProcId of the job to return info for
           required: true
         - $ref: "#/parameters/projection"
-        - $ref: "#/parameters/constraint"
       responses:
         200:
           $ref: "#/responses/oneJobOK"
@@ -219,7 +218,6 @@ paths:
           type: string
           description: The classad attribute to return
           required: true
-        - $ref: "#/parameters/constraint"
       responses:
         200:
           description: OK
@@ -294,7 +292,6 @@ paths:
           description: The ProcId of the job to return info for
           required: true
         - $ref: "#/parameters/projection"
-        - $ref: "#/parameters/constraint"
       responses:
         200:
           $ref: "#/responses/oneJobOK"
@@ -329,7 +326,6 @@ paths:
           type: string
           description: The classad attribute to return
           required: true
-        - $ref: "#/parameters/constraint"
       responses:
         200:
           description: OK

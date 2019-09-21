@@ -57,8 +57,8 @@ class JobsBaseResource(Resource):
 
     querytype = None
 
-    def _query_common(self, id_requirements, constraint, projection):
-        # type: (str, str, str) -> List[Dict]
+    def _query_common(self, constraint, projection):
+        # type: (str, str) -> List[Dict]
         schedd = utils.get_schedd()
         projection_list = []
         if projection:
@@ -77,27 +77,17 @@ class JobsBaseResource(Resource):
         else:
             assert False, "Invalid querytype %r" % self.querytype
 
-        requirements = id_requirements or "true"
-        if constraint:
-            requirements += " && " + constraint
         try:
-            classads = method(requirements=requirements, projection=projection_list)
-            if id_requirements and not classads:
-                # No classads found.  Did the constraint not match or does the cluster.proc
-                # not exist in the first place?
-                id_classads = method(requirements=id_requirements, projection=[])
-                if not id_classads:
-                    abort(404, message=NO_JOBS)
+            classads = method(requirements=constraint, projection=projection_list)
             return utils.classads_to_dicts(classads)
         except RuntimeError as err:
             abort(503, message=FAIL_QUERY % {"service": service, "err": err})
 
-    def query_multi(self, clusterid=None, constraint=None, projection=None):
+    def query_multi(self, clusterid=None, constraint="true", projection=None):
         # type: (int, str, str) -> List[Dict]
-        id_requirements = ""
         if clusterid is not None:
-            id_requirements = "clusterid==%d" % clusterid
-        ad_dicts = self._query_common(id_requirements, constraint, projection)
+            constraint += " && clusterid==%d" % clusterid
+        ad_dicts = self._query_common(constraint, projection)
 
         projection_list = projection.split(",") if projection else None
         data = []
@@ -112,10 +102,11 @@ class JobsBaseResource(Resource):
 
         return data
 
-    def query_single(self, clusterid, procid, constraint=None, projection=None):
-        # type: (int, int, str, str) -> Dict
-        id_requirements = "clusterid==%d && procid==%d" % (clusterid, procid)
-        ad_dicts = self._query_common(id_requirements, constraint, projection)
+    def query_single(self, clusterid, procid, projection=None):
+        # type: (int, int, str) -> Dict
+        ad_dicts = self._query_common(
+            "clusterid==%d && procid==%d" % (clusterid, procid), projection
+        )
         if ad_dicts:
             ad = ad_dicts[0]
             jobid = "%(clusterid)s.%(procid)s" % ad
@@ -129,9 +120,9 @@ class JobsBaseResource(Resource):
         else:
             abort(404, message=NO_JOBS)
 
-    def query_attribute(self, clusterid, procid, attribute, constraint=None):
-        # type: (int, int, str, str) -> Scalar
-        q = self.query_single(clusterid, procid, constraint, projection=attribute)
+    def query_attribute(self, clusterid, procid, attribute):
+        # type: (int, int, str) -> Scalar
+        q = self.query_single(clusterid, procid, projection=attribute)
         if not q:
             abort(404, message=NO_JOBS)
         l_attribute = attribute.lower()
@@ -146,16 +137,9 @@ class JobsBaseResource(Resource):
         parser.add_argument("constraint", default="true")
         args = parser.parse_args()
         if attribute:
-            return self.query_attribute(
-                clusterid, procid, attribute, constraint=args.constraint
-            )
+            return self.query_attribute(clusterid, procid, attribute)
         if procid is not None:
-            return self.query_single(
-                clusterid,
-                procid,
-                constraint=args.constraint,
-                projection=args.projection,
-            )
+            return self.query_single(clusterid, procid, projection=args.projection)
         return self.query_multi(
             clusterid, constraint=args.constraint, projection=args.projection
         )
