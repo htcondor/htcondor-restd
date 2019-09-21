@@ -1,7 +1,7 @@
 swagger: "2.0"
 info:
   title: HTCondor REST API
-  version: "1.0.0"
+  version: "1.1.0"
 
 host: localhost:9680
 basePath: /v1
@@ -135,7 +135,7 @@ paths:
         400:
           description: Invalid argument(s)
           schema:
-            type: string
+            $ref: "#/definitions/error"
         404:
           description: No matching jobs
           schema:
