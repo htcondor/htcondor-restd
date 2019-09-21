@@ -66,7 +66,9 @@ class JobsBaseResource(Resource):
                 abort(400, message=BAD_ATTRIBUTE_OR_PROJECTION)
             # We always need to get clusterid and procid even if the user doesn't
             # ask for it, so we can construct jobid
-            projection_list = list(set(["clusterid", "procid"] + projection.split(",")))
+            projection_list = list(
+                set(["clusterid", "procid"] + projection.lower().split(","))
+            )
 
         if self.querytype == "history":
             method = schedd.history
@@ -89,7 +91,7 @@ class JobsBaseResource(Resource):
             constraint += " && clusterid==%d" % clusterid
         ad_dicts = self._query_common(constraint, projection)
 
-        projection_list = projection.split(",") if projection else None
+        projection_list = projection.lower().split(",") if projection else None
         data = []
         for ad in ad_dicts:
             jobid = "%(clusterid)s.%(procid)s" % ad
@@ -110,7 +112,7 @@ class JobsBaseResource(Resource):
         if ad_dicts:
             ad = ad_dicts[0]
             jobid = "%(clusterid)s.%(procid)s" % ad
-            projection_list = projection.split(",") if projection else None
+            projection_list = projection.lower().split(",") if projection else None
             if projection_list:
                 if "clusterid" not in projection_list:
                     del ad["clusterid"]
@@ -286,8 +288,8 @@ class V1StatusResource(Resource):
         if args.projection:
             if not validate_projection(args.projection):
                 abort(400, message=BAD_ATTRIBUTE_OR_PROJECTION)
-            projection_list = args.projection.split(",")
-            # We need 'name' in the projection to extract it from the classad
+            projection_list = args.projection.lower().split(",")
+            # We need 'name' and 'mytype' in the projection to extract it from the classad
             query_projection_list = list(set(projection_list).union(["name"]))
 
         constraint = args.constraint
