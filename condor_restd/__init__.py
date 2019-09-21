@@ -99,7 +99,7 @@ class JobsBaseResource(Resource):
             id_requirements = "clusterid==%d" % clusterid
         ad_dicts = self._query_common(id_requirements, constraint, projection)
 
-        projection_list = ",".split(projection) if projection else None
+        projection_list = projection.split(",") if projection else None
         data = []
         for ad in ad_dicts:
             jobid = "%(clusterid)s.%(procid)s" % ad
@@ -119,7 +119,7 @@ class JobsBaseResource(Resource):
         if ad_dicts:
             ad = ad_dicts[0]
             jobid = "%(clusterid)s.%(procid)s" % ad
-            projection_list = ",".split(projection) if projection else None
+            projection_list = projection.split(",") if projection else None
             if projection_list:
                 if "clusterid" not in projection_list:
                     del ad["clusterid"]
@@ -302,7 +302,7 @@ class V1StatusResource(Resource):
         if args.projection:
             if not validate_projection(args.projection):
                 abort(400, message=BAD_ATTRIBUTE_OR_PROJECTION)
-            projection = ",".split(args.projection)
+            projection = args.projection.split(",")
 
         constraint = args.constraint
         if name:
