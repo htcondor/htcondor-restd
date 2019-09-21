@@ -32,18 +32,7 @@ responses:
     schema:
       type: array
       items:
-        type: object
-        properties:
-          name:
-            description: >-
-              The name of the queried object, such as the slot name for
-              machine (startd) ads.
-            type: string
-          classad:
-            description: >-
-              The classad of the object, with attribute names lowercased.
-              `projection` can limit which attributes are present.
-            type: object
+        $ref: "#/definitions/status"
 
 definitions:
   job:
@@ -56,6 +45,20 @@ definitions:
       classad:
         description: >-
           The classad of the job, with attribute names lowercased.
+          `projection` can limit which attributes are present.
+        type: object
+  status:
+    description: A status query result
+    type: object
+    properties:
+      name:
+        description: >-
+          The name of the queried object, such as the slot name for
+          machine (startd) ads.
+        type: string
+      classad:
+        description: >-
+          The classad of the object, with attribute names lowercased.
           `projection` can limit which attributes are present.
         type: object
   error:
