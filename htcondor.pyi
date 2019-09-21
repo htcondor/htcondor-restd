@@ -30,7 +30,7 @@ class Collector:
         ad_type: AdTypes = ...,
         constraint: str = ...,
         projection: List[str] = ...,
-        statistics: str = ...,
+        statistics: List[str] = ...,
     ) -> List[classad.ClassAd]: ...
 
 class DaemonTypes:
