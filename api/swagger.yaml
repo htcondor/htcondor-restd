@@ -22,29 +22,11 @@ responses:
     schema:
       type: array
       items:
-        type: object
-        properties:
-          jobid:
-            description: The ClusterID.ProcID of a job, such as `52.5`.
-            type: string
-          classad:
-            description: >-
-              The classad of the job, with attribute names lowercased.
-              `projection` can limit which attributes are present.
-            type: object
+        $ref: "#/definitions/job"
   oneJobOK:
     description: OK
     schema:
-      type: object
-      properties:
-        jobid:
-          description: The ClusterID.ProcID of a job, such as `52.5`.
-          type: string
-        classad:
-          description: >-
-            The classad of the job, with attribute names lowercased.
-            `projection` can limit which attributes are present.
-          type: object
+      $ref: "#/definitions/job"
   statusOK:
     description: OK
     schema:
@@ -64,6 +46,18 @@ responses:
             type: object
 
 definitions:
+  job:
+    description: A single HTCondor job
+    type: object
+    properties:
+      jobid:
+        description: The `ClusterID.ProcID` of the job, such as `52.5`
+        type: string
+      classad:
+        description: >-
+          The classad of the job, with attribute names lowercased.
+          `projection` can limit which attributes are present.
+        type: object
   error:
     type: object
     properties:
