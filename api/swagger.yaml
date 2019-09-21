@@ -81,7 +81,9 @@ parameters:
     in: query
     name: query
     type: string
-    description: Type of classad to query
+    description: >-
+      Type of classad to query. By default this is a startd ad (i.e. the ad
+      for slots on an execute machine).
     enum:
       - accounting
       - any
@@ -97,8 +99,6 @@ parameters:
       - schedd
       - startd
       - submitter
-      - submitters
-        # ^ Original API & command-line tools used "submitters"
   configDaemon:
     in: query
     name: daemon
