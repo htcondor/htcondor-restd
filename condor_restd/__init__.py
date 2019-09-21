@@ -281,12 +281,14 @@ class V1StatusResource(Resource):
 
         collector = Collector()
         ad_type = self.AD_TYPES_MAP[args.query]
-        projection = []
+        projection_list = query_projection_list = []
 
         if args.projection:
             if not validate_projection(args.projection):
                 abort(400, message=BAD_ATTRIBUTE_OR_PROJECTION)
-            projection = args.projection.split(",")
+            projection_list = args.projection.split(",")
+            # We need 'name' in the projection to extract it from the classad
+            query_projection_list = list(set(projection_list).union(["name"]))
 
         constraint = args.constraint
         if name:
@@ -297,16 +299,22 @@ class V1StatusResource(Resource):
         classads = []  # type: List[classad.ClassAd]
         try:
             classads = collector.query(
-                ad_type, constraint=constraint, projection=projection
+                ad_type, constraint=constraint, projection=query_projection_list
             )
         except RuntimeError as err:
             abort(503, message=FAIL_QUERY % {"service": "collector", "err": err})
+
         if not classads:
             abort(404, message=NO_CLASSADS)
-        data = [
-            {"name": ad["name"], "classad": ad}
-            for ad in utils.classads_to_dicts(classads)
-        ]
+
+        data = []
+        ad_dicts = utils.classads_to_dicts(classads)
+        for ad in ad_dicts:
+            name = ad["name"]
+            if projection_list:
+                if "name" not in projection_list:
+                    del ad["name"]
+            data.append(dict(classad=ad, name=name))
 
         return data
 
