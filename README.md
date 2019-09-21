@@ -8,10 +8,10 @@ configuration, and machine status.
 
 Installation
 ------------
-Create a virtualenv then `pip install -r requirements.txt`.  To run using the
+Create a virtualenv then `pip install -e .`.  To run using the
 built-in Flask server (not for production), run
 
-    FLASK_APP=condor_restd.py flask run -p 9680
+    FLASK_APP=condor_restd flask run -p 9680
 
 For additional scalability, run using a WSGI server such as gunicorn:
 

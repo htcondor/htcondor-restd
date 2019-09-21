@@ -5,6 +5,7 @@ REST-based API for HTCondor, based on the HTCondor Python bindings.
 Allows read-only queries for jobs (in-queue and historical),
 configuration, and machine status.
 """
+from __future__ import absolute_import
 import re
 import json
 
@@ -20,7 +21,7 @@ from htcondor import AdTypes, Collector, DaemonTypes, RemoteParam
 from flask import Flask
 from flask_restful import Resource, Api, abort, reqparse
 
-import utils
+from . import utils
 
 app = Flask(__name__)
 api = Api(app)

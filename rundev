@@ -11,9 +11,10 @@ ask_yn () {
     return 2 # EOF
 }
 
+cd "$(dirname "$0")" || exit $?
+pip install -e . || exit $?
+export FLASK_APP=condor_restd
 export FLASK_ENV=development
-export FLASK_APP=condor_restd.py
-cd "$(dirname "$0")"
 while true; do
     flask run -p 9680; ret=$?
     if [[ $ret -eq 0 ]]; then

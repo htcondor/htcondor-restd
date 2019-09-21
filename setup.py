@@ -1,15 +1,16 @@
 """
-HTCondor REST daemon
+HTCondor REST Daemon
 
 This webapp listens to HTTP queries and transforms them into queries
 to the Condor daemons for queue, machine, and config information.
 """
 
 from setuptools import setup
+from condor_restd.version import __version__
 
 setup(
-    name="HTCondor REST daemon",
-    version="1.0",
+    name="HTCondor-RESTD",
+    version=__version__,
     long_description=__doc__,
     packages=["condor_restd"],
     include_package_data=True,
