@@ -290,7 +290,7 @@ class V1StatusResource(Resource):
                 abort(400, message=BAD_ATTRIBUTE_OR_PROJECTION)
             projection_list = args.projection.lower().split(",")
             # We need 'name' and 'mytype' in the projection to extract it from the classad
-            query_projection_list = list(set(projection_list).union(["name"]))
+            query_projection_list = list(set(["name", "mytype"] + projection_list))
 
         constraint = args.constraint
         if name:
@@ -313,10 +313,13 @@ class V1StatusResource(Resource):
         ad_dicts = utils.classads_to_dicts(classads)
         for ad in ad_dicts:
             name = ad["name"]
+            type_ = ad["mytype"]
             if projection_list:
                 if "name" not in projection_list:
                     del ad["name"]
-            data.append(dict(classad=ad, name=name))
+                if "mytype" not in projection_list:
+                    del ad["mytype"]
+            data.append(dict(classad=ad, name=name, type=type_))
 
         return data
 

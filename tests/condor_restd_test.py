@@ -52,7 +52,7 @@ def test_status(fixtures):
     for daemon in ["collector", "master", "negotiator", "schedd", "startd"]:
         j = checked_get_json("v1/status?query=" + daemon)
         assert j, "%s: no classads returned" % (daemon)
-        for attr in ["name", "classad"]:
+        for attr in ["name", "classad", "type"]:
             assert j[0].get(attr), "%s: %s attr missing" % (daemon, attr)
 
 

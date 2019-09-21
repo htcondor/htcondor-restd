@@ -56,6 +56,10 @@ definitions:
           The name of the queried object, such as the slot name for
           machine (startd) ads.
         type: string
+      type:
+        description: >-
+          The type of the classad, such as `Machine` for a machine ad.
+        type: string
       classad:
         description: >-
           The classad of the object, with attribute names lowercased.
