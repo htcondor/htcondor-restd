@@ -99,11 +99,16 @@ class JobsBaseResource(Resource):
             id_requirements = "clusterid==%d" % clusterid
         ad_dicts = self._query_common(id_requirements, constraint, projection)
 
+        projection_list = ",".split(projection) if projection else None
         data = []
         for ad in ad_dicts:
-            data.append(
-                dict(classad=ad, jobid="%s.%s" % (ad["clusterid"], ad["procid"]))
-            )
+            jobid = "%(clusterid)s.%(procid)s" % ad
+            if projection_list:
+                if "clusterid" not in projection_list:
+                    del ad["clusterid"]
+                if "procid" not in projection_list:
+                    del ad["procid"]
+            data.append(dict(classad=ad, jobid=jobid))
 
         return data
 
@@ -113,7 +118,14 @@ class JobsBaseResource(Resource):
         ad_dicts = self._query_common(id_requirements, constraint, projection)
         if ad_dicts:
             ad = ad_dicts[0]
-            return dict(classad=ad, jobid="%s.%s" % (ad["clusterid"], ad["procid"]))
+            jobid = "%(clusterid)s.%(procid)s" % ad
+            projection_list = ",".split(projection) if projection else None
+            if projection_list:
+                if "clusterid" not in projection_list:
+                    del ad["clusterid"]
+                if "procid" not in projection_list:
+                    del ad["procid"]
+            return dict(classad=ad, jobid=jobid)
         else:
             abort(404, message=NO_JOBS)
 
