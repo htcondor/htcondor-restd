@@ -18,7 +18,7 @@ For additional scalability, run using a WSGI server such as gunicorn:
     gunicorn -w4 -b127.0.0.1:9680 condor_restd:app
 
 
-These commands run on port 9680.
+These commands will run the server on port 9680.
 
 
 Queries
