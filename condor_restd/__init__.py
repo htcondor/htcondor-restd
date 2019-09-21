@@ -10,7 +10,7 @@ import re
 import json
 
 try:
-    from typing import Dict, List, Optional
+    from typing import Dict, List, Optional, Union
 except ImportError:
     pass
 
@@ -22,6 +22,13 @@ from flask import Flask
 from flask_restful import Resource, Api, abort, reqparse
 
 from . import utils
+
+
+NO_JOBS = "No matching jobs"
+NO_ATTRIBUTE = "No such attribute"
+BAD_ATTRIBUTE_OR_PROJECTION = "Invalid attribute or projection"
+FAIL_QUERY = "Error querying %(service)s: %(err)s"
+
 
 app = Flask(__name__)
 api = Api(app)
@@ -53,7 +60,7 @@ class JobsBaseResource(Resource):
         projection_list = []
         if projection:
             if not validate_projection(projection):
-                abort(400, message="Invalid attribute or projection")
+                abort(400, message=BAD_ATTRIBUTE_OR_PROJECTION)
             projection_list = list(set(["clusterid", "procid"] + projection.split(",")))
 
         if self.querytype == "history":
@@ -66,15 +73,17 @@ class JobsBaseResource(Resource):
         requirements = id_requirements or "true"
         if constraint:
             requirements += " && " + constraint
-        classads = method(requirements=requirements, projection=projection_list)
-        if id_requirements and not classads:
-            # No classads found.  Did the constraint not match or does the cluster.proc
-            # not exist in the first place?
-            id_classads = method(requirements=id_requirements, projection=[])
-            if not id_classads:
-                abort(404, message="No matching jobs")
-
-        return utils.classads_to_dicts(classads)
+        try:
+            classads = method(requirements=requirements, projection=projection_list)
+            if id_requirements and not classads:
+                # No classads found.  Did the constraint not match or does the cluster.proc
+                # not exist in the first place?
+                id_classads = method(requirements=id_requirements, projection=[])
+                if not id_classads:
+                    abort(404, message=NO_JOBS)
+            return utils.classads_to_dicts(classads)
+        except RuntimeError as err:
+            abort(503, message=FAIL_QUERY % {"service": "schedd", "err": err})
 
     def query_multi(self, clusterid=None, constraint=None, projection=None):
         # type: (int, str, str) -> List[Dict]
@@ -92,23 +101,25 @@ class JobsBaseResource(Resource):
         return data
 
     def query_single(self, clusterid, procid, constraint=None, projection=None):
-        # type: (int, int, str, str) -> Optional[Dict]
+        # type: (int, int, str, str) -> Dict
         id_requirements = "clusterid==%d && procid==%d" % (clusterid, procid)
         ad_dicts = self._query_common(id_requirements, constraint, projection)
         if ad_dicts:
             ad = ad_dicts[0]
             return dict(classad=ad, jobid="%s.%s" % (ad["clusterid"], ad["procid"]))
+        else:
+            abort(404, message=NO_JOBS)
 
     def query_attribute(self, clusterid, procid, attribute, constraint=None):
-        # type: (int, int, str, str) -> Optional[str]
+        # type: (int, int, str, str) -> Union[str,int,float,bool,None]
         q = self.query_single(clusterid, procid, constraint, projection=attribute)
         if not q:
-            abort(404, message="No matching jobs")
+            abort(404, message=NO_JOBS)
         l_attribute = attribute.lower()
         if l_attribute in q["classad"]:
             return q["classad"][l_attribute]
         else:
-            abort(404, message="No such attribute")
+            abort(404, message=NO_ATTRIBUTE)
 
     def get(self, clusterid=None, procid=None, attribute=None):
         parser = reqparse.RequestParser(trim=True)
@@ -253,7 +264,6 @@ class V1StatusResource(Resource):
         "schedd": AdTypes.Schedd,
         "startd": AdTypes.Startd,
         "submitter": AdTypes.Submitter,
-        "submitters": AdTypes.Submitter,  # Original API & command-line tools used "submitters"
     }
 
     def get(self, name=None):
@@ -272,10 +282,7 @@ class V1StatusResource(Resource):
 
         if args.projection:
             if not validate_projection(args.projection):
-                abort(
-                    400,
-                    message="Invalid projection: must be a comma-separated list of classad attributes",
-                )
+                abort(400, message=BAD_ATTRIBUTE_OR_PROJECTION)
             projection = ",".split(args.projection)
 
         constraint = args.constraint
@@ -290,7 +297,7 @@ class V1StatusResource(Resource):
                 ad_type, constraint=constraint, projection=projection
             )
         except RuntimeError as err:
-            abort(400, message=str(err))  # LAZY
+            abort(503, message=FAIL_QUERY % {"service": "collector", "err": err})
 
         data = [
             {"name": ad["name"], "classad": ad}
@@ -349,13 +356,13 @@ class V1ConfigResource(Resource):
 
         if attribute:
             if not validate_attribute(attribute):
-                abort(400, message="Invalid attribute")
+                abort(400, message=BAD_ATTRIBUTE_OR_PROJECTION)
 
         if attribute:
             try:
                 return param_lower[attribute.lower()]
-            except KeyError as err:
-                abort(404, message=str(err))
+            except KeyError:
+                abort(404, message=NO_ATTRIBUTE)
 
         return param_lower
 
