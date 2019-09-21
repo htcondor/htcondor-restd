@@ -11,6 +11,8 @@ import json
 
 try:
     from typing import Dict, List, Optional, Union
+
+    Scalar = Union[None, bool, int, float, str]
 except ImportError:
     pass
 
@@ -25,7 +27,8 @@ from . import utils
 
 
 NO_JOBS = "No matching jobs"
-NO_ATTRIBUTE = "No such attribute"
+NO_CLASSADS = "No matching classads"
+NO_ATTRIBUTE = "Undefined attribute"
 BAD_ATTRIBUTE_OR_PROJECTION = "Invalid attribute or projection"
 FAIL_QUERY = "Error querying %(service)s: %(err)s"
 
@@ -61,12 +64,16 @@ class JobsBaseResource(Resource):
         if projection:
             if not validate_projection(projection):
                 abort(400, message=BAD_ATTRIBUTE_OR_PROJECTION)
+            # We always need to get clusterid and procid even if the user doesn't
+            # ask for it, so we can construct jobid
             projection_list = list(set(["clusterid", "procid"] + projection.split(",")))
 
         if self.querytype == "history":
             method = schedd.history
+            service = "history file"
         elif self.querytype == "xquery":
             method = schedd.xquery
+            service = "schedd"
         else:
             assert False, "Invalid querytype %r" % self.querytype
 
@@ -83,7 +90,7 @@ class JobsBaseResource(Resource):
                     abort(404, message=NO_JOBS)
             return utils.classads_to_dicts(classads)
         except RuntimeError as err:
-            abort(503, message=FAIL_QUERY % {"service": "schedd", "err": err})
+            abort(503, message=FAIL_QUERY % {"service": service, "err": err})
 
     def query_multi(self, clusterid=None, constraint=None, projection=None):
         # type: (int, str, str) -> List[Dict]
@@ -111,7 +118,7 @@ class JobsBaseResource(Resource):
             abort(404, message=NO_JOBS)
 
     def query_attribute(self, clusterid, procid, attribute, constraint=None):
-        # type: (int, int, str, str) -> Union[str,int,float,bool,None]
+        # type: (int, int, str, str) -> Scalar
         q = self.query_single(clusterid, procid, constraint, projection=attribute)
         if not q:
             abort(404, message=NO_JOBS)

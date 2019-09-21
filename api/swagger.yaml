@@ -63,6 +63,14 @@ responses:
               `projection` can limit which attributes are present.
             type: object
 
+definitions:
+  error:
+    type: object
+    properties:
+      message:
+        description: Text describing the error
+        type: string
+
 parameters:
   projection:
     in: query
@@ -71,7 +79,7 @@ parameters:
     collectionFormat: csv
     items:
       type: string
-    description: Subset of classad attributes to return
+    description: Comma-separated list of classad attributes to return
   constraint:
     in: query
     name: constraint
@@ -82,8 +90,8 @@ parameters:
     name: query
     type: string
     description: >-
-      Type of classad to query. By default this is a startd ad (i.e. the ad
-      for slots on an execute machine).
+      Type of classad to query. By default, this is `any`, i.e. all classads
+      in the collector.
     enum:
       - accounting
       - any
@@ -103,7 +111,8 @@ parameters:
     in: query
     name: daemon
     type: string
-    description: Daemon to query
+    description: >-
+      Running daemon to query. If not specified, will query the config on disk.
     enum:
       - collector
       - master
@@ -127,6 +136,10 @@ paths:
           description: Invalid argument(s)
           schema:
             type: string
+        404:
+          description: No matching jobs
+          schema:
+            $ref: "#/definitions/error"
   /jobs/{cluster}:
     get:
       summary: Returns information for jobs in the given cluster in the queue.
@@ -147,11 +160,11 @@ paths:
         400:
           description: Invalid argument(s)
           schema:
-            type: string
+            $ref: "#/definitions/error"
         404:
-          description: No jobs with that ClusterId
+          description: No matching jobs
           schema:
-            type: string
+            $ref: "#/definitions/error"
   /jobs/{cluster}/{proc}:
     get:
       summary: Returns information for a single job in the given cluster and proc in the queue
@@ -178,11 +191,11 @@ paths:
         400:
           description: Invalid argument(s)
           schema:
-            type: string
+            $ref: "#/definitions/error"
         404:
-          description: No jobs with that ClusterId.ProcId
+          description: No matching jobs
           schema:
-            type: string
+            $ref: "#/definitions/error"
   /jobs/{cluster}/{proc}/{attr}:
     get:
       summary: Returns a single attribute of the given job in the queue.
@@ -213,11 +226,11 @@ paths:
         400:
           description: Invalid argument(s)
           schema:
-            type: string
+            $ref: "#/definitions/error"
         404:
           description: No matching jobs or no matching attribute
           schema:
-            type: string
+            $ref: "#/definitions/error"
   /history:
     get:
       summary: Returns information for all jobs in the job history.
@@ -232,7 +245,11 @@ paths:
         400:
           description: Invalid argument(s)
           schema:
-            type: string
+            $ref: "#/definitions/error"
+        404:
+          description: No matching jobs
+          schema:
+            $ref: "#/definitions/error"
   /history/{cluster}:
     get:
       summary: Returns information for jobs in the given cluster in the job history.
@@ -253,11 +270,11 @@ paths:
         400:
           description: Invalid argument(s)
           schema:
-            type: string
+            $ref: "#/definitions/error"
         404:
           description: No jobs with that ClusterId
           schema:
-            type: string
+            $ref: "#/definitions/error"
   /history/{cluster}/{proc}:
     get:
       summary: Returns information for a single job in the given cluster and proc in the job history.
@@ -284,11 +301,11 @@ paths:
         400:
           description: Invalid argument(s)
           schema:
-            type: string
+            $ref: "#/definitions/error"
         404:
-          description: No jobs with that ClusterId.ProcId
+          description: No matching jobs
           schema:
-            type: string
+            $ref: "#/definitions/error"
   /history/{cluster}/{proc}/{attr}:
     get:
       summary: Returns a single attribute of the given job in the job history.
@@ -316,16 +333,14 @@ paths:
       responses:
         200:
           description: OK
-          schema:
-            type: string
         400:
           description: Invalid argument(s)
           schema:
-            type: string
+            $ref: "#/definitions/error"
         404:
           description: No matching jobs or no matching attribute
           schema:
-            type: string
+            $ref: "#/definitions/error"
   /status:
     get:
       summary: Returns condor_status information
@@ -341,7 +356,7 @@ paths:
         400:
           description: Invalid argument(s)
           schema:
-            type: string
+            $ref: "#/definitions/error"
   /status/{name}:
     get:
       summary: Returns condor_status information for the ad with the given Name
@@ -363,10 +378,12 @@ paths:
         400:
           description: Invalid argument(s)
           schema:
-            type: string
+            $ref: "#/definitions/error"
   /config:
     get:
-      summary: Returns condor config information
+      summary: >-
+        Get all config attributes from either the file system or a running
+        daemon.
       tags: [config]
       produces: ["application/json"]
       parameters:
@@ -377,33 +394,33 @@ paths:
           schema:
             type: object
             description: >-
-              The parameter table, with the param names lowercased.
+              All config attributes, with the keys lowercased
         400:
           description: Invalid argument(s)
           schema:
-            type: string
+            $ref: "#/definitions/error"
   /config/{attr}:
     get:
-      summary: Returns the value of a specific config attribute
+      summary: >-
+        Get a specific config attribute from either the file system or a
+        running daemon.
       tags: [config]
       produces: ["application/json"]
       parameters:
         - in: path
           name: attr
           type: string
-          description: The classad attribute to return
+          description: The config attribute to return
           required: true
         - $ref: "#/parameters/configDaemon"
       responses:
         200:
-          description: OK
-          schema:
-            type: string
+          description: Value of the config attribute
         400:
           description: Invalid argument(s)
           schema:
-            type: string
+            $ref: "#/definitions/error"
         404:
-          description: Attribute not found
+          description: Undefined config attribute
           schema:
-            type: string
+            $ref: "#/definitions/error"
