@@ -412,10 +412,3 @@ api.add_resource(
 )
 api.add_resource(V1StatusResource, "/v1/status", "/v1/status/<name>")
 api.add_resource(V1ConfigResource, "/v1/config", "/v1/config/<attribute>")
-
-PUBLIC_ENDPOINTS = [
-    "V1JobsResource",
-    "V1ConfigResource",
-    "V1HistoryResource",
-    "V1StatusResource",
-]
