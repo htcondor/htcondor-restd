@@ -1,6 +1,6 @@
-condor_restd.py
-===============
-REST-based API for HTCondor, based on the Python bindings.
+condor_restd
+============
+REST-based API for HTCondor, using the Python bindings.
 
 Currently allows read-only queries for jobs (in-queue and historical),
 configuration, and machine status.
@@ -8,6 +8,14 @@ configuration, and machine status.
 
 Installation
 ------------
+Installation requires the following Python modules:
+
+- `htcondor >= 8.9.2`
+- `flask`
+- `flask-restful`
+
+Install them via `pip` or your OS's package manager.
+
 Create a virtualenv then `pip install -e .`.  To run using the
 built-in Flask server (not for production), run
 
@@ -32,34 +40,43 @@ Access job information (similar to `condor_q` and `condor_history`).
 `jobs` and `history` behave exactly the same, except `jobs` queries jobs in the queue,
 and `history` queries jobs that have left the queue.
 
-    GET /v1/jobs{/clusterid}{/procid}{/attribute}{?projection,constraint}
-    GET /v1/history{/clusterid}{/procid}{/attribute}{?projection,constraint}
+    GET /v1/jobs{/clusterid}{?projection,constraint}
+    GET /v1/history{/clusterid}{?projection,constraint}
 
-If `clusterid`, `procid`, and `attribute` are specified, then it
-returns the value of that attribute.  Otherwise it returns an array
-of one or more objects of the form:
+Returns a list of job objects.  A job object looks like
 
     {
       "jobid": "123.45",
-      "classad": { (json-encoded classad object) }
+      "classad": { <classad> }
     }
 
-If `clusterid` and `procid` are specified, then the array will contain
-a single job.  If only `clusterid` is specified, then the array will
-contain all jobs within that cluster.  If none of these are specified,
-the array will contain all jobs in the queue.
+Returns an empty list if no jobs match.
+
+`clusterid` limits the results to jobs with the given cluster ID.
 
 `projection` is one or more comma-separated attributes; if specified,
-only those attributes, plus `clusterid` and `procid` will be in the
-`classad` object of each job.  `projection` is ignored if `attribute`
-is specified.
+only those attributes will be in the `classad` object of each job.
 
 `constraint` is a classad expression restricting which jobs to include
-in the result.  The constraint is always applied, even if `clusterid`
-and `procid` are specified.
+in the result.
 
-Returns 404 if no matching jobs are found.  This includes zero jobs
-matching the constraint.
+    GET /v1/jobs/clusterid/procid{?projection}
+    GET /v1/history/clusterid/procid{?projection}
+
+Returns a single job object with cluster ID given by `clusterid` and
+the proc ID given by `procid`.
+Raises `404` if no such job exists.
+
+`projection` is one or more comma-separated attributes; if specified,
+only those attributes will be in the `classad` object of the job.
+
+    GET /v1/jobs/clusterid/procid/attribute
+    GET /v1/history/clusterid/procid/attribute
+
+Returns a single attribute of a job with cluster ID given by `clusterid`,
+proc ID given by `procid`, and attribute name given by `attribute`.
+
+Raises `404` if no such job exists, or if the attribute is undefined.
 
 
 ### config
@@ -94,6 +111,7 @@ This returns an array of objects of the following form:
 
     {
       "name": "<name classad attribute>",
+      "type": "<ad type>",
       "classad": { <classad object> }
     }
 
@@ -101,11 +119,10 @@ This returns an array of objects of the following form:
 matching ads are returned.
 
 `query` is the type of ad to query; see the "Query options" in the
-condor_status(1) manpage.  "startd" is the default.
+condor_status(1) manpage.  "any" is the default.
 
 `projection` is one or more comma-separated attributes; if specified,
-only those attributes, plus `name` and `procid` will be in the
-`classad` object of each job.
+only those attributes will be in the `classad` object of each job.
 
 `constraint` is a classad expression restricting which ads to include
 in the result.
