@@ -40,7 +40,7 @@ def classads_to_dicts(classads):
 
 def validate_attribute(attribute):
     """Return True if the given attribute is a valid classad attribute name"""
-    return bool(re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", attribute))
+    return bool(re.match(r"[A-Za-z_][A-Za-z0-9_]*$", attribute))
 
 
 def validate_projection(projection):
