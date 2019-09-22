@@ -20,6 +20,7 @@ def get_schedd(pool=None, schedd_name=None):
         return htcondor.Schedd()
 
 
+# TODO: This doesn't work with dicts inside lists
 def deep_lcasekeys(dictish):
     # type: (Union[Dict[str, Any],htcondor.RemoteParam, htcondor._Param]) -> Dict
     """Return a copy of a dictionary with all the keys lowercased, recursively."""
