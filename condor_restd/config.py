@@ -11,26 +11,8 @@ from . import utils
 
 
 class V1ConfigResource(Resource):
-    """Endpoints for accessing condor config
-
-    This implements the following endpoint:
-
-        GET /v1/config{/attribute}{?daemon}
-
-        If `attribute` is specified, returns the value of the specific
-        attribute in the condor config.  If not specified, returns an object
-        of the form:
-
-            {
-              "attribute1": "value1",
-              "attribute2": "value2",
-              ...
-            }
-
-        If `daemon` is specified, query the given running daemon; otherwise,
-        query the static config files.
-
-        Returns 404 if `attribute` is specified but the attribute is undefined.
+    """Endpoints for accessing condor config; implements the /v1/config
+    endpoints.
 
     """
 

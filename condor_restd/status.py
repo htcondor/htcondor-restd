@@ -15,34 +15,8 @@ from . import utils
 
 
 class V1StatusResource(Resource):
-    """Endpoints for accessing condor_status information
-
-    This implements the following endpoint:
-
-        GET /v1/status{?projection,constraint,query}
-
-        This returns an array of objects of the following form:
-
-            {
-              "name": "<name classad attribute>",
-              "classad": { <classad object> }
-            }
-
-        `name` is a specific host or slot to query.  If not specified, all
-        matching ads are returned.
-
-        `query` is the type of ad to query; see the "Query options" in the
-        condor_status(1) manpage.  "startd" is the default.
-
-        `projection` is one or more comma-separated attributes; if specified,
-        only those attributes, plus `name` and `procid` will be in the
-        `classad` object of each job.
-
-        `constraint` is a classad expression restricting which ads to include
-        in the result.
-
-        Returns 404 if no matching ads are found.  This includes zero ads
-        matching the constraint.
+    """Endpoints for accessing condor_status information; implements the
+    /v1/status endpoints.
 
     """
 

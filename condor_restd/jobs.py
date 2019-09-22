@@ -15,7 +15,7 @@ from . import utils
 
 class JobsBaseResource(Resource):
     """Base class for endpoints for accessing current and historical job
-    information. This class must be overridden to specify `executable`.
+    information. This class must be overridden to specify `querytype`.
 
     """
 
@@ -23,6 +23,16 @@ class JobsBaseResource(Resource):
 
     def _query_common(self, constraint, projection):
         # type: (str, str) -> List[Dict]
+        """Return the result of a schedd or history file query with a
+        constraint (classad expression) and a projection (comma-separated
+        attributes), as a list of dicts.
+
+        Handles getting the schedd, validating args, calling the query, and
+        transforming the classads into plain dicts (which can be serialized).
+
+        Aborts with a 400 if the args are bad, and a 503 if the query failed.
+
+        """
         schedd = utils.get_schedd()
         projection_list = []
         if projection:
@@ -53,6 +63,10 @@ class JobsBaseResource(Resource):
 
     def query_multi(self, clusterid=None, constraint="true", projection=None):
         # type: (int, str, str) -> List[Dict]
+        """Return multiple jobs, optionally constraining by `clusterid` in
+        addition to `constraint`.
+
+        """
         if clusterid is not None:
             constraint += " && clusterid==%d" % clusterid
         ad_dicts = self._query_common(constraint, projection)
@@ -72,6 +86,7 @@ class JobsBaseResource(Resource):
 
     def query_single(self, clusterid, procid, projection=None):
         # type: (int, int, str) -> Dict
+        """Return a single job."""
         ad_dicts = self._query_common(
             "clusterid==%d && procid==%d" % (clusterid, procid), projection
         )
@@ -90,6 +105,7 @@ class JobsBaseResource(Resource):
 
     def query_attribute(self, clusterid, procid, attribute):
         # type: (int, int, str) -> Scalar
+        """Return a single attribute."""
         q = self.query_single(clusterid, procid, projection=attribute)
         if not q:
             abort(404, message=NO_JOBS)
@@ -114,37 +130,8 @@ class JobsBaseResource(Resource):
 
 
 class V1JobsResource(JobsBaseResource):
-    """Endpoints for accessing information about jobs in the queue;
-
-    This implements the following endpoint:
-
-        GET /v1/jobs{/clusterid}{/procid}{/attribute}{?projection,constraint}
-
-        If `clusterid`, `procid`, and `attribute` are specified, then it
-        returns the value of that attribute, or null if the attribute is
-        missing or undefined.
-
-        If `attribute` is not specified, job object(s) will be returned,
-        which have the form:
-
-            {
-              "jobid": "123.45",
-              "classad": { (json-encoded classad object) }
-            }
-
-        If `clusterid` and `procid` are specified, then the result will be a
-        single job.  If only `clusterid` is specified, then the result will
-        be an array of all jobs within that cluster.  If none of these are
-        specified, the result will be an of all jobs in the queue.
-
-        `projection` is one or more comma-separated attributes; if specified,
-        only those attributes, plus `clusterid` and `procid` will be in the
-        `classad` object of each job.  `projection` is ignored if `attribute`
-        is specified.
-
-        `constraint` is a classad expression restricting which jobs to include
-        in the result.  The constraint is always applied, even if `clusterid`
-        and `procid` are specified.
+    """Endpoints for accessing information about jobs in the queue; implements
+    the /v1/jobs endpoints.
 
     """
 
@@ -152,36 +139,8 @@ class V1JobsResource(JobsBaseResource):
 
 
 class V1HistoryResource(JobsBaseResource):
-    """Endpoints for accessing historical job information
-
-    This implements the following endpoint:
-
-        GET /v1/history{/clusterid}{/procid}{/attribute}{?projection,constraint}
-
-        If `clusterid`, `procid`, and `attribute` are specified, then it
-        returns the value of that attribute.  Otherwise it returns an array
-        of one or more objects of the form:
-
-            {
-              "jobid": "123.45",
-              "classad": { (classad object) }
-            }
-
-        If `clusterid` and `procid` are specified, then the array will contain
-        a single job.
-
-        If only `clusterid` is specified, then the array will
-        contain all jobs within that cluster.  If none of these are specified,
-        the array will contain all jobs in the history.
-
-        `projection` is one or more comma-separated attributes; if specified,
-        only those attributes, plus `clusterid` and `procid` will be in the
-        `classad` object of each job.  `projection` is ignored if `attribute`
-        is specified.
-
-        `constraint` is a classad expression restricting which jobs to include
-        in the result.  The constraint is always applied, even if `clusterid`
-        and `procid` are specified.
+    """Endpoints for accessing historical job information; implements the
+    /v1/history endpoints.
 
     """
 
