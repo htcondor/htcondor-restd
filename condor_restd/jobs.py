@@ -7,6 +7,8 @@ try:
 except ImportError:
     pass
 
+import six
+
 from flask_restful import Resource, abort, reqparse
 
 from .errors import BAD_ATTRIBUTE_OR_PROJECTION, FAIL_QUERY, NO_JOBS, NO_ATTRIBUTE
@@ -120,12 +122,22 @@ class JobsBaseResource(Resource):
         parser.add_argument("projection", default="")
         parser.add_argument("constraint", default="true")
         args = parser.parse_args()
+        try:
+            projection = six.ensure_str(args.projection)
+            constraint = six.ensure_str(args.constraint)
+        except UnicodeError as err:
+            abort(400, message=str(err))
+            return  # quiet warning
         if attribute:
+            try:
+                attribute = six.ensure_str(attribute)
+            except UnicodeError as err:
+                abort(400, message=str(err))
             return self.query_attribute(clusterid, procid, attribute)
         if procid is not None:
-            return self.query_single(clusterid, procid, projection=args.projection)
+            return self.query_single(clusterid, procid, projection=projection)
         return self.query_multi(
-            clusterid, constraint=args.constraint, projection=args.projection
+            clusterid, constraint=constraint, projection=projection
         )
 
 

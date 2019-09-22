@@ -6,6 +6,7 @@ except ImportError:
     pass
 
 from flask_restful import Resource, reqparse, abort
+import six
 
 from htcondor import AdTypes, Collector
 from classad import ClassAd
@@ -46,23 +47,27 @@ class V1StatusResource(Resource):
             "query", choices=list(self.AD_TYPES_MAP.keys()), default="any"
         )
         args = parser.parse_args()
+        try:
+            projection = six.ensure_str(args.projection).lower()
+            constraint = six.ensure_str(args.constraint).lower()
+        except UnicodeError as err:
+            abort(400, message=str(err))
+            return  # quiet warning
 
         collector = Collector()
         ad_type = self.AD_TYPES_MAP[args.query]
         projection_list = query_projection_list = []
 
-        if args.projection:
-            if not utils.validate_projection(args.projection):
+        if projection:
+            if not utils.validate_projection(projection):
                 abort(400, message=BAD_ATTRIBUTE_OR_PROJECTION)
-            projection_list = args.projection.lower().split(",")
+            projection_list = projection.split(",")
             # We need 'name' and 'mytype' in the projection to extract it from the classad
             query_projection_list = list(set(["name", "mytype"] + projection_list))
 
-        constraint = args.constraint
+        constraint = constraint or "true"
         if name:
-            constraint = '(name == "%s")' % name
-            if args.constraint:
-                constraint += " && (%s)" % args.constraint
+            constraint += ' && (name == "%s")' % name
 
         classads = []  # type: List[ClassAd]
         try:
