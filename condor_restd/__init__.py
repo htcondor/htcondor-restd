@@ -82,6 +82,8 @@ class JobsBaseResource(Resource):
         try:
             classads = method(requirements=constraint, projection=projection_list)
             return utils.classads_to_dicts(classads)
+        except SyntaxError as err:
+            abort(400, message=str(err))
         except RuntimeError as err:
             abort(503, message=FAIL_QUERY % {"service": service, "err": err})
 
@@ -303,6 +305,8 @@ class V1StatusResource(Resource):
             classads = collector.query(
                 ad_type, constraint=constraint, projection=query_projection_list
             )
+        except SyntaxError as err:
+            abort(400, message=str(err))
         except RuntimeError as err:
             abort(503, message=FAIL_QUERY % {"service": "collector", "err": err})
 
