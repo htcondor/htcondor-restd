@@ -1,4 +1,4 @@
 flask
 flask-restful
 gunicorn
-htcondor
+htcondor >= 8.9.2
