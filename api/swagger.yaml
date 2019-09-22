@@ -50,6 +50,12 @@ definitions:
         type: string
       classad:
         $ref: "#/definitions/classad"
+    example:
+      jobid: "110.0"
+      classad:
+        owner: "matyas"
+        cmd: "/usr/bin/sleep"
+        requestcpus: 1
   status:
     description: A status query result
     type: object
@@ -65,6 +71,13 @@ definitions:
         type: string
       classad:
         $ref: "#/definitions/classad"
+    example:
+      name: "slot1@siren.cs.wisc.edu"
+      type: "Machine"
+      classad:
+        cpus: 1
+        memory: 1813
+        state: "Unclaimed"
   error:
     type: object
     properties:
