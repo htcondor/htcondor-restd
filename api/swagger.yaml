@@ -35,6 +35,12 @@ responses:
         $ref: "#/definitions/status"
 
 definitions:
+  classad:
+    description: >-
+      A ClassAd object in the form of key/value pairs.
+      All attribute names are lowercased.
+    type: object
+    additionalProperties: true
   job:
     description: A single HTCondor job
     type: object
@@ -43,10 +49,7 @@ definitions:
         description: The `ClusterID.ProcID` of the job, such as `52.5`
         type: string
       classad:
-        description: >-
-          The classad of the job, with attribute names lowercased.
-          `projection` can limit which attributes are present.
-        type: object
+        $ref: "#/definitions/classad"
   status:
     description: A status query result
     type: object
@@ -61,10 +64,7 @@ definitions:
           The type of the classad, such as `Machine` for a machine ad.
         type: string
       classad:
-        description: >-
-          The classad of the object, with attribute names lowercased.
-          `projection` can limit which attributes are present.
-        type: object
+        $ref: "#/definitions/classad"
   error:
     type: object
     properties:
@@ -400,6 +400,7 @@ paths:
             type: object
             description: >-
               All config attributes, with the keys lowercased
+            additionalProperties: true
         400:
           description: Invalid argument(s)
           schema:
