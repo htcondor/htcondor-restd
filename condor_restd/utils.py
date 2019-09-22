@@ -1,3 +1,5 @@
+import re
+
 import classad
 import htcondor
 import json
@@ -34,3 +36,15 @@ def classads_to_dicts(classads):
     # type: (List[classad.ClassAd]) -> List[Dict]
     """Return a copy of a list of classads as a list of dicts, with all the keys lowercased, recursively."""
     return [deep_lcasekeys(json.loads(ad.printJson())) for ad in classads]
+
+
+def validate_attribute(attribute):
+    """Return True if the given attribute is a valid classad attribute name"""
+    return bool(re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", attribute))
+
+
+def validate_projection(projection):
+    """Return True if the given projection has a valid format, i.e.
+    is a comma-separated list of valid attribute names.
+    """
+    return all(validate_attribute(x) for x in projection.split(","))
