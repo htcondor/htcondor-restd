@@ -150,10 +150,6 @@ paths:
           description: Invalid argument(s)
           schema:
             $ref: "#/definitions/error"
-        404:
-          description: No matching jobs
-          schema:
-            $ref: "#/definitions/error"
   /jobs/{cluster}:
     get:
       summary: Returns information for jobs in the given cluster in the queue.
@@ -173,10 +169,6 @@ paths:
           $ref: "#/responses/jobsOK"
         400:
           description: Invalid argument(s)
-          schema:
-            $ref: "#/definitions/error"
-        404:
-          description: No matching jobs
           schema:
             $ref: "#/definitions/error"
   /jobs/{cluster}/{proc}:
@@ -258,10 +250,6 @@ paths:
           description: Invalid argument(s)
           schema:
             $ref: "#/definitions/error"
-        404:
-          description: No matching jobs
-          schema:
-            $ref: "#/definitions/error"
   /history/{cluster}:
     get:
       summary: Returns information for jobs in the given cluster in the job history.
@@ -281,10 +269,6 @@ paths:
           $ref: "#/responses/jobsOK"
         400:
           description: Invalid argument(s)
-          schema:
-            $ref: "#/definitions/error"
-        404:
-          description: No jobs with that ClusterId
           schema:
             $ref: "#/definitions/error"
   /history/{cluster}/{proc}:
@@ -365,10 +349,6 @@ paths:
           $ref: "#/responses/statusOK"
         400:
           description: Invalid argument(s)
-          schema:
-            $ref: "#/definitions/error"
-        404:
-          description: No matching classads
           schema:
             $ref: "#/definitions/error"
   /status/{name}:
