@@ -126,6 +126,3 @@ only those attributes will be in the `classad` object of each job.
 
 `constraint` is a classad expression restricting which ads to include
 in the result.
-
-Returns 404 if no matching ads are found.  This includes zero ads
-matching the constraint.

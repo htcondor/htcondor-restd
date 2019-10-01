@@ -78,10 +78,8 @@ class V1StatusResource(Resource):
             abort(400, message=str(err))
         except (IOError,RuntimeError) as err:
             abort(503, message=FAIL_QUERY % {"service": "collector", "err": err})
-
         if not classads:
-            abort(404, message=NO_CLASSADS)
-
+            return []
         data = []
         ad_dicts = utils.classads_to_dicts(classads)
         for ad in ad_dicts:

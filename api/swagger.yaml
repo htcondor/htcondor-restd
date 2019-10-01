@@ -373,10 +373,6 @@ paths:
           description: Invalid argument(s)
           schema:
             $ref: "#/definitions/error"
-        404:
-          description: No matching classads
-          schema:
-            $ref: "#/definitions/error"
   /config:
     get:
       summary: >-
