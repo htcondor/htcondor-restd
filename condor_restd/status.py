@@ -76,7 +76,7 @@ class V1StatusResource(Resource):
             )
         except SyntaxError as err:
             abort(400, message=str(err))
-        except RuntimeError as err:
+        except (IOError,RuntimeError) as err:
             abort(503, message=FAIL_QUERY % {"service": "collector", "err": err})
 
         if not classads:

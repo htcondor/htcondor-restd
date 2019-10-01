@@ -60,7 +60,7 @@ class JobsBaseResource(Resource):
             return utils.classads_to_dicts(classads)
         except SyntaxError as err:
             abort(400, message=str(err))
-        except RuntimeError as err:
+        except (IOError, RuntimeError) as err:
             abort(503, message=FAIL_QUERY % {"service": service, "err": err})
 
     def query_multi(self, clusterid=None, constraint="true", projection=None):

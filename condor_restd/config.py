@@ -6,7 +6,7 @@ from htcondor import DaemonTypes, Collector, RemoteParam
 
 import htcondor
 
-from .errors import BAD_ATTRIBUTE_OR_PROJECTION, NO_ATTRIBUTE
+from .errors import BAD_ATTRIBUTE_OR_PROJECTION, FAIL_QUERY, NO_ATTRIBUTE
 from . import utils
 
 
@@ -30,9 +30,17 @@ class V1ConfigResource(Resource):
         parser.add_argument("daemon", choices=list(self.DAEMON_TYPES_MAP.keys()))
         args = parser.parse_args()
 
+        param = None
         if args.daemon:
-            daemon_ad = Collector().locate(self.DAEMON_TYPES_MAP[args.daemon])
-            param = RemoteParam(daemon_ad)
+            daemon_ad = None
+            try:
+                daemon_ad = Collector().locate(self.DAEMON_TYPES_MAP[args.daemon])
+            except (IOError, RuntimeError) as err:
+                abort(503, message=FAIL_QUERY % {"service": "collector", "err": err})
+            try:
+                param = RemoteParam(daemon_ad)
+            except (IOError, RuntimeError) as err:
+                abort(503, message=FAIL_QUERY % {"service": args.daemon, "err": err})
         else:
             htcondor.reload_config()
             param = htcondor.param
