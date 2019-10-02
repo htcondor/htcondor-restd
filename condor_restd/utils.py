@@ -20,17 +20,22 @@ def get_schedd(pool=None, schedd_name=None):
         return htcondor.Schedd()
 
 
-# TODO: This doesn't work with dicts inside lists
-def deep_lcasekeys(dictish):
-    # type: (Union[Dict[str, Any],htcondor.RemoteParam, htcondor._Param]) -> Dict
-    """Return a copy of a dictionary with all the keys lowercased, recursively."""
-    transformed_dict = dict()
-    for k, v in dictish.items():
-        k = k.lower()
-        if isinstance(v, dict):
+def deep_lcasekeys(in_value):
+    """Return a copy of a complex data structure where all keys
+    in dictionaries are lowercased.
+
+    """
+    if isinstance(in_value, dict):
+        out_value = dict()
+        for k, v in in_value.items():
+            k = k.lower()
             v = deep_lcasekeys(v)
-        transformed_dict[k] = v
-    return transformed_dict
+            out_value[k] = v
+        return out_value
+    elif isinstance(in_value, (list, tuple)):
+        return [deep_lcasekeys(x) for x in in_value]
+    else:
+        return in_value
 
 
 def classads_to_dicts(classads):
