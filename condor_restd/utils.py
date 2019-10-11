@@ -25,7 +25,7 @@ def deep_lcasekeys(in_value):
     in dictionaries are lowercased.
 
     """
-    if isinstance(in_value, dict):
+    if isinstance(in_value, (dict, htcondor._Param, htcondor.RemoteParam)):
         out_value = dict()
         for k, v in in_value.items():
             k = k.lower()

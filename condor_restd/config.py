@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 from flask_restful import Resource, reqparse, abort
+import six
 
 from htcondor import DaemonTypes, Collector, RemoteParam
 
@@ -53,7 +54,7 @@ class V1ConfigResource(Resource):
 
         if attribute:
             try:
-                return param_lower[attribute.lower()]
+                return param_lower[six.ensure_str(attribute).lower()]
             except KeyError:
                 abort(404, message=NO_ATTRIBUTE)
 
