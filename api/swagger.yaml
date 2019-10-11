@@ -86,6 +86,12 @@ definitions:
         type: string
 
 parameters:
+  schedd:
+    in: path
+    name: schedd
+    type: string
+    description: The schedd to query (or "DEFAULT" for the default schedd).
+    required: true
   projection:
     in: query
     name: projection
@@ -141,11 +147,7 @@ paths:
       tags: [jobs]
       produces: ["application/json"]
       parameters:
-        - in: path
-          name: schedd
-          type: string
-          description: The schedd to query (or "DEFAULT" for the default schedd).
-          required: true
+        - $ref: "#/parameters/schedd"
         - $ref: "#/parameters/projection"
         - $ref: "#/parameters/constraint"
       responses:
@@ -167,11 +169,7 @@ paths:
       tags: [jobs]
       produces: ["application/json"]
       parameters:
-        - in: path
-          name: schedd
-          type: string
-          description: The schedd to query (or "DEFAULT" for the default schedd).
-          required: true
+        - $ref: "#/parameters/schedd"
         - in: path
           name: cluster
           type: integer
@@ -185,6 +183,10 @@ paths:
           $ref: "#/responses/jobsOK"
         400:
           description: Invalid argument(s)
+          schema:
+            $ref: "#/definitions/error"
+        404:
+          description: Schedd not found
           schema:
             $ref: "#/definitions/error"
   /jobs/{schedd}/{cluster}/{proc}:
@@ -195,11 +197,7 @@ paths:
       tags: [jobs]
       produces: ["application/json"]
       parameters:
-        - in: path
-          name: schedd
-          type: string
-          description: The schedd to query (or "DEFAULT" for the default schedd).
-          required: true
+        - $ref: "#/parameters/schedd"
         - in: path
           name: cluster
           type: integer
@@ -221,7 +219,7 @@ paths:
           schema:
             $ref: "#/definitions/error"
         404:
-          description: No matching jobs
+          description: No matching jobs or schedd not found
           schema:
             $ref: "#/definitions/error"
   /jobs/{schedd}/{cluster}/{proc}/{attr}:
@@ -232,11 +230,7 @@ paths:
       tags: [jobs]
       produces: ["application/json"]
       parameters:
-        - in: path
-          name: schedd
-          type: string
-          description: The schedd to query (or "DEFAULT" for the default schedd).
-          required: true
+        - $ref: "#/parameters/schedd"
         - in: path
           name: cluster
           type: integer
@@ -262,7 +256,7 @@ paths:
           schema:
             $ref: "#/definitions/error"
         404:
-          description: No matching jobs or no matching attribute
+          description: No matching jobs, no matching attribute, or schedd not found
           schema:
             $ref: "#/definitions/error"
   /history/{schedd}:
@@ -271,18 +265,18 @@ paths:
       tags: [jobs]
       produces: ["application/json"]
       parameters:
+        - $ref: "#/parameters/schedd"
         - $ref: "#/parameters/projection"
         - $ref: "#/parameters/constraint"
-        - in: path
-          name: schedd
-          type: string
-          description: The schedd to query (or "DEFAULT" for the default schedd).
-          required: true
       responses:
         200:
           $ref: "#/responses/jobsOK"
         400:
           description: Invalid argument(s)
+          schema:
+            $ref: "#/definitions/error"
+        404:
+          description: Schedd not found
           schema:
             $ref: "#/definitions/error"
   /history/{schedd}/{cluster}:
@@ -293,11 +287,7 @@ paths:
       tags: [jobs]
       produces: ["application/json"]
       parameters:
-        - in: path
-          name: schedd
-          type: string
-          description: The schedd to query (or "DEFAULT" for the default schedd).
-          required: true
+        - $ref: "#/parameters/schedd"
         - in: path
           name: cluster
           type: integer
@@ -313,6 +303,10 @@ paths:
           description: Invalid argument(s)
           schema:
             $ref: "#/definitions/error"
+        404:
+          description: Schedd not found
+          schema:
+            $ref: "#/definitions/error"
   /history/{schedd}/{cluster}/{proc}:
     get:
       summary: >-
@@ -321,11 +315,7 @@ paths:
       tags: [jobs]
       produces: ["application/json"]
       parameters:
-        - in: path
-          name: schedd
-          type: string
-          description: The schedd to query (or "DEFAULT" for the default schedd).
-          required: true
+        - $ref: "#/parameters/schedd"
         - in: path
           name: cluster
           type: integer
@@ -347,7 +337,7 @@ paths:
           schema:
             $ref: "#/definitions/error"
         404:
-          description: No matching jobs
+          description: No matching jobs or schedd not found
           schema:
             $ref: "#/definitions/error"
   /history/{schedd}/{cluster}/{proc}/{attr}:
@@ -358,11 +348,7 @@ paths:
       tags: [jobs]
       produces: ["application/json"]
       parameters:
-        - in: path
-          name: schedd
-          type: string
-          description: The schedd to query (or "DEFAULT" for the default schedd).
-          required: true
+        - $ref: "#/parameters/schedd"
         - in: path
           name: cluster
           type: integer
@@ -388,7 +374,7 @@ paths:
           schema:
             $ref: "#/definitions/error"
         404:
-          description: No matching jobs or no matching attribute
+          description: No matching jobs, no matching attribute, or schedd not found
           schema:
             $ref: "#/definitions/error"
   /status:
