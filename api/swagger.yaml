@@ -1,7 +1,7 @@
 swagger: "2.0"
 info:
   title: HTCondor REST API
-  version: "1.1.1"
+  version: "0.191011"
 
 host: localhost:9680
 basePath: /v1
@@ -135,12 +135,17 @@ parameters:
       - startd
 
 paths:
-  /jobs:
+  /jobs/{schedd}:
     get:
-      summary: Returns information for all jobs in the queue.
+      summary: Returns information for all jobs in the queue for the given schedd.
       tags: [jobs]
       produces: ["application/json"]
       parameters:
+        - in: path
+          name: schedd
+          type: string
+          description: The schedd to query (or "DEFAULT" for the default schedd).
+          required: true
         - $ref: "#/parameters/projection"
         - $ref: "#/parameters/constraint"
       responses:
@@ -150,12 +155,23 @@ paths:
           description: Invalid argument(s)
           schema:
             $ref: "#/definitions/error"
-  /jobs/{cluster}:
+        404:
+          description: Schedd not found
+          schema:
+            $ref: "#/definitions/error"
+  /jobs/{schedd}/{cluster}:
     get:
-      summary: Returns information for jobs in the given cluster in the queue.
+      summary: >-
+        Returns information for jobs in the given cluster in the queue
+        for the given schedd.
       tags: [jobs]
       produces: ["application/json"]
       parameters:
+        - in: path
+          name: schedd
+          type: string
+          description: The schedd to query (or "DEFAULT" for the default schedd).
+          required: true
         - in: path
           name: cluster
           type: integer
@@ -171,12 +187,19 @@ paths:
           description: Invalid argument(s)
           schema:
             $ref: "#/definitions/error"
-  /jobs/{cluster}/{proc}:
+  /jobs/{schedd}/{cluster}/{proc}:
     get:
-      summary: Returns information for a single job in the given cluster and proc in the queue
+      summary: >-
+        Returns information for a single job in the given cluster and proc in the queue
+        for the given schedd.
       tags: [jobs]
       produces: ["application/json"]
       parameters:
+        - in: path
+          name: schedd
+          type: string
+          description: The schedd to query (or "DEFAULT" for the default schedd).
+          required: true
         - in: path
           name: cluster
           type: integer
@@ -201,12 +224,19 @@ paths:
           description: No matching jobs
           schema:
             $ref: "#/definitions/error"
-  /jobs/{cluster}/{proc}/{attr}:
+  /jobs/{schedd}/{cluster}/{proc}/{attr}:
     get:
-      summary: Returns a single attribute of the given job in the queue.
+      summary: >-
+        Returns a single attribute of the given job in the queue
+        for the given schedd.
       tags: [jobs]
       produces: ["application/json"]
       parameters:
+        - in: path
+          name: schedd
+          type: string
+          description: The schedd to query (or "DEFAULT" for the default schedd).
+          required: true
         - in: path
           name: cluster
           type: integer
@@ -235,14 +265,19 @@ paths:
           description: No matching jobs or no matching attribute
           schema:
             $ref: "#/definitions/error"
-  /history:
+  /history/{schedd}:
     get:
-      summary: Returns information for all jobs in the job history.
+      summary: Returns information for all jobs in the job history for the given schedd.
       tags: [jobs]
       produces: ["application/json"]
       parameters:
         - $ref: "#/parameters/projection"
         - $ref: "#/parameters/constraint"
+        - in: path
+          name: schedd
+          type: string
+          description: The schedd to query (or "DEFAULT" for the default schedd).
+          required: true
       responses:
         200:
           $ref: "#/responses/jobsOK"
@@ -250,12 +285,19 @@ paths:
           description: Invalid argument(s)
           schema:
             $ref: "#/definitions/error"
-  /history/{cluster}:
+  /history/{schedd}/{cluster}:
     get:
-      summary: Returns information for jobs in the given cluster in the job history.
+      summary: >-
+        Returns information for jobs in the given cluster in the job history
+        for the given schedd.
       tags: [jobs]
       produces: ["application/json"]
       parameters:
+        - in: path
+          name: schedd
+          type: string
+          description: The schedd to query (or "DEFAULT" for the default schedd).
+          required: true
         - in: path
           name: cluster
           type: integer
@@ -271,12 +313,19 @@ paths:
           description: Invalid argument(s)
           schema:
             $ref: "#/definitions/error"
-  /history/{cluster}/{proc}:
+  /history/{schedd}/{cluster}/{proc}:
     get:
-      summary: Returns information for a single job in the given cluster and proc in the job history.
+      summary: >-
+        Returns information for a single job in the given cluster and proc
+        in the job history for the given schedd.
       tags: [jobs]
       produces: ["application/json"]
       parameters:
+        - in: path
+          name: schedd
+          type: string
+          description: The schedd to query (or "DEFAULT" for the default schedd).
+          required: true
         - in: path
           name: cluster
           type: integer
@@ -301,12 +350,19 @@ paths:
           description: No matching jobs
           schema:
             $ref: "#/definitions/error"
-  /history/{cluster}/{proc}/{attr}:
+  /history/{schedd}/{cluster}/{proc}/{attr}:
     get:
-      summary: Returns a single attribute of the given job in the job history.
+      summary: >-
+        Returns a single attribute of the given job in the job history
+        for the given schedd.
       tags: [jobs]
       produces: ["application/json"]
       parameters:
+        - in: path
+          name: schedd
+          type: string
+          description: The schedd to query (or "DEFAULT" for the default schedd).
+          required: true
         - in: path
           name: cluster
           type: integer

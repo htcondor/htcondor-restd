@@ -37,17 +37,17 @@ api.add_resource(RootResource, "/")
 
 api.add_resource(
     V1JobsResource,
-    "/v1/jobs",
-    "/v1/jobs/<int:clusterid>",
-    "/v1/jobs/<int:clusterid>/<int:procid>",
-    "/v1/jobs/<int:clusterid>/<int:procid>/<attribute>",
+    "/v1/jobs/<schedd>",
+    "/v1/jobs/<schedd>/<int:clusterid>",
+    "/v1/jobs/<schedd>/<int:clusterid>/<int:procid>",
+    "/v1/jobs/<schedd>/<int:clusterid>/<int:procid>/<attribute>",
 )
 api.add_resource(
     V1HistoryResource,
-    "/v1/history",
-    "/v1/history/<int:clusterid>",
-    "/v1/history/<int:clusterid>/<int:procid>",
-    "/v1/history/<int:clusterid>/<int:procid>/<attribute>",
+    "/v1/history/<schedd>",
+    "/v1/history/<schedd>/<int:clusterid>",
+    "/v1/history/<schedd>/<int:clusterid>/<int:procid>",
+    "/v1/history/<schedd>/<int:clusterid>/<int:procid>/<attribute>",
 )
 api.add_resource(V1StatusResource, "/v1/status", "/v1/status/<name>")
 api.add_resource(V1ConfigResource, "/v1/config", "/v1/config/<attribute>")

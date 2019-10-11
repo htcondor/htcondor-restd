@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 try:
-    from typing import Dict, List, Union
+    from typing import Dict, List, Optional, Union
 
     Scalar = Union[None, bool, int, float, str]
 except ImportError:
@@ -11,7 +11,13 @@ import six
 
 from flask_restful import Resource, abort, reqparse
 
-from .errors import BAD_ATTRIBUTE_OR_PROJECTION, FAIL_QUERY, NO_JOBS, NO_ATTRIBUTE
+from .errors import (
+    BAD_ATTRIBUTE_OR_PROJECTION,
+    FAIL_QUERY,
+    NO_JOBS,
+    NO_ATTRIBUTE,
+    ScheddNotFound,
+)
 from . import utils
 
 
@@ -23,8 +29,8 @@ class JobsBaseResource(Resource):
 
     querytype = None
 
-    def _query_common(self, constraint, projection):
-        # type: (str, str) -> List[Dict]
+    def _query_common(self, schedd, constraint, projection):
+        # type: (Optional[str], str, str) -> List[Dict]
         """Return the result of a schedd or history file query with a
         constraint (classad expression) and a projection (comma-separated
         attributes), as a list of dicts.
@@ -35,7 +41,13 @@ class JobsBaseResource(Resource):
         Aborts with a 400 if the args are bad, and a 503 if the query failed.
 
         """
-        schedd = utils.get_schedd()
+        try:
+            schedd = utils.get_schedd(schedd_name=schedd)
+        except ScheddNotFound as err:
+            abort(400, message="Schedd not found: %s" % err)
+        except IOError as err:
+            abort(503, message=FAIL_QUERY % {"service": "collector", "err": err})
+
         projection_list = []
         if projection:
             if not utils.validate_projection(projection):
@@ -63,15 +75,15 @@ class JobsBaseResource(Resource):
         except (IOError, RuntimeError) as err:
             abort(503, message=FAIL_QUERY % {"service": service, "err": err})
 
-    def query_multi(self, clusterid=None, constraint="true", projection=None):
-        # type: (int, str, str) -> List[Dict]
+    def query_multi(self, schedd, clusterid=None, constraint="true", projection=None):
+        # type: (Optional[str], int, str, str) -> List[Dict]
         """Return multiple jobs, optionally constraining by `clusterid` in
         addition to `constraint`.
 
         """
         if clusterid is not None:
             constraint += " && clusterid==%d" % clusterid
-        ad_dicts = self._query_common(constraint, projection)
+        ad_dicts = self._query_common(schedd, constraint, projection)
 
         projection_list = projection.lower().split(",") if projection else None
         data = []
@@ -86,11 +98,11 @@ class JobsBaseResource(Resource):
 
         return data
 
-    def query_single(self, clusterid, procid, projection=None):
-        # type: (int, int, str) -> Dict
+    def query_single(self, schedd, clusterid, procid, projection=None):
+        # type: (Optional[str], int, int, str) -> Dict
         """Return a single job."""
         ad_dicts = self._query_common(
-            "clusterid==%d && procid==%d" % (clusterid, procid), projection
+            schedd, "clusterid==%d && procid==%d" % (clusterid, procid), projection
         )
         if ad_dicts:
             ad = ad_dicts[0]
@@ -105,10 +117,10 @@ class JobsBaseResource(Resource):
         else:
             abort(404, message=NO_JOBS)
 
-    def query_attribute(self, clusterid, procid, attribute):
-        # type: (int, int, str) -> Scalar
+    def query_attribute(self, schedd, clusterid, procid, attribute):
+        # type: (Optional[str], int, int, str) -> Scalar
         """Return a single attribute."""
-        q = self.query_single(clusterid, procid, projection=attribute)
+        q = self.query_single(schedd, clusterid, procid, projection=attribute)
         if not q:
             abort(404, message=NO_JOBS)
         l_attribute = attribute.lower()
@@ -117,11 +129,13 @@ class JobsBaseResource(Resource):
         else:
             abort(404, message=NO_ATTRIBUTE)
 
-    def get(self, clusterid=None, procid=None, attribute=None):
+    def get(self, schedd, clusterid=None, procid=None, attribute=None):
         parser = reqparse.RequestParser(trim=True)
         parser.add_argument("projection", default="")
         parser.add_argument("constraint", default="true")
         args = parser.parse_args()
+        if schedd == "DEFAULT":
+            schedd = None
         try:
             projection = six.ensure_str(args.projection)
             constraint = six.ensure_str(args.constraint)
@@ -133,11 +147,11 @@ class JobsBaseResource(Resource):
                 attribute = six.ensure_str(attribute)
             except UnicodeError as err:
                 abort(400, message=str(err))
-            return self.query_attribute(clusterid, procid, attribute)
+            return self.query_attribute(schedd, clusterid, procid, attribute)
         if procid is not None:
-            return self.query_single(clusterid, procid, projection=projection)
+            return self.query_single(schedd, clusterid, procid, projection=projection)
         return self.query_multi(
-            clusterid, constraint=constraint, projection=projection
+            schedd, clusterid, constraint=constraint, projection=projection
         )
 
 

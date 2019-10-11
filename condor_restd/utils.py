@@ -3,21 +3,31 @@ import re
 import classad
 import htcondor
 import json
+import six
 
 try:
     from typing import Dict, Any, Union, List
 except ImportError:
     pass
 
+from .errors import ScheddNotFound
+
 
 def get_schedd(pool=None, schedd_name=None):
-    if schedd_name:
-        collector = htcondor.Collector(pool)
-        return htcondor.Schedd(
-            collector.locate(htcondor.DaemonTypes.Schedd, schedd_name)
-        )
-    else:
-        return htcondor.Schedd()
+    try:
+        if schedd_name:
+            collector = htcondor.Collector(pool)
+            return htcondor.Schedd(
+                collector.locate(htcondor.DaemonTypes.Schedd, schedd_name)
+            )
+        else:
+            return htcondor.Schedd()
+    except RuntimeError as err:
+        if "unable to locate" in err.message.lower():
+            six.raise_from(ScheddNotFound, err)
+    except ValueError as err:
+        if "unable to find" in err.message.lower():
+            six.raise_from(ScheddNotFound, err)
 
 
 def deep_lcasekeys(in_value):

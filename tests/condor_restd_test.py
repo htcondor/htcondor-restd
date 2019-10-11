@@ -77,14 +77,14 @@ def rm_cluster(cluster_id):
 
 def _test_jobs_queries(cluster_id, endpoint):
     queries = [
-        "v1/%s" % endpoint,
-        "v1/%s/%d" % (endpoint, cluster_id),
-        "v1/%s/%d/0" % (endpoint, cluster_id),
+        "v1/%s/DEFAULT" % endpoint,
+        "v1/%s/DEFAULT/%d" % (endpoint, cluster_id),
+        "v1/%s/DEFAULT/%d/0" % (endpoint, cluster_id),
     ]
-    check_job_attrs(checked_get_json("v1/%s" % endpoint)[0])
-    check_job_attrs(checked_get_json("v1/%s/%d" % (endpoint, cluster_id))[0])
-    check_job_attrs(checked_get_json("v1/%s/%d/0" % (endpoint, cluster_id)))
-    j = checked_get_json("v1/%s/%d/0/cmd" % (endpoint, cluster_id))
+    check_job_attrs(checked_get_json("v1/%s/DEFAULT" % endpoint)[0])
+    check_job_attrs(checked_get_json("v1/%s/DEFAULT/%d" % (endpoint, cluster_id))[0])
+    check_job_attrs(checked_get_json("v1/%s/DEFAULT/%d/0" % (endpoint, cluster_id)))
+    j = checked_get_json("v1/%s/DEFAULT/%d/0/cmd" % (endpoint, cluster_id))
     assert j == "/usr/bin/sleep", "%s: cmd attribute does not match" % endpoint
 
 
