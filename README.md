@@ -5,6 +5,9 @@ REST-based API for HTCondor, using the Python bindings.
 Currently allows read-only queries for jobs (in-queue and historical),
 configuration, and machine status.
 
+NOTE: The API has not stabilized yet and queries are subject to change.
+Do not use in production.
+
 
 Installation
 ------------
