@@ -40,8 +40,8 @@ Access job information (similar to `condor_q` and `condor_history`).
 `jobs` and `history` behave exactly the same, except `jobs` queries jobs in the queue,
 and `history` queries jobs that have left the queue.
 
-    GET /v1/jobs{/clusterid}{?projection,constraint}
-    GET /v1/history{/clusterid}{?projection,constraint}
+    GET /v1/jobs/schedd{/clusterid}{?projection,constraint}
+    GET /v1/history/schedd{/clusterid}{?projection,constraint}
 
 Returns a list of job objects.  A job object looks like
 
@@ -52,6 +52,10 @@ Returns a list of job objects.  A job object looks like
 
 Returns an empty list if no jobs match.
 
+`schedd` is the name of the schedd to query, or `DEFAULT` to use
+the default schedd (if there is one). Raises `404` if the schedd
+does not exist.
+
 `clusterid` limits the results to jobs with the given cluster ID.
 
 `projection` is one or more comma-separated attributes; if specified,
@@ -60,21 +64,29 @@ only those attributes will be in the `classad` object of each job.
 `constraint` is a classad expression restricting which jobs to include
 in the result.
 
-    GET /v1/jobs/clusterid/procid{?projection}
-    GET /v1/history/clusterid/procid{?projection}
+    GET /v1/jobs/schedd/clusterid/procid{?projection}
+    GET /v1/history/schedd/clusterid/procid{?projection}
 
 Returns a single job object with cluster ID given by `clusterid` and
 the proc ID given by `procid`.
 Raises `404` if no such job exists.
 
+`schedd` is the name of the schedd to query, or `DEFAULT` to use
+the default schedd (if there is one). Raises `404` if the schedd
+does not exist.
+
 `projection` is one or more comma-separated attributes; if specified,
 only those attributes will be in the `classad` object of the job.
 
-    GET /v1/jobs/clusterid/procid/attribute
-    GET /v1/history/clusterid/procid/attribute
+    GET /v1/jobs/schedd/clusterid/procid/attribute
+    GET /v1/history/schedd/clusterid/procid/attribute
 
 Returns a single attribute of a job with cluster ID given by `clusterid`,
 proc ID given by `procid`, and attribute name given by `attribute`.
+
+`schedd` is the name of the schedd to query, or `DEFAULT` to use
+the default schedd (if there is one). Raises `404` if the schedd
+does not exist.
 
 Raises `404` if no such job exists, or if the attribute is undefined.
 
