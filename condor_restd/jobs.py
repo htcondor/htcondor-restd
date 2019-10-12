@@ -29,7 +29,7 @@ class JobsBaseResource(Resource):
 
     querytype = None
 
-    def _query_common(self, schedd, constraint, projection):
+    def _query_common(self, schedd_name, constraint, projection):
         # type: (Optional[str], str, str) -> List[Dict]
         """Return the result of a schedd or history file query with a
         constraint (classad expression) and a projection (comma-separated
@@ -42,7 +42,7 @@ class JobsBaseResource(Resource):
 
         """
         try:
-            schedd = utils.get_schedd(schedd_name=schedd)
+            schedd = utils.get_schedd(schedd_name=schedd_name)
         except ScheddNotFound as err:
             abort(400, message="Schedd not found: %s" % err)
         except IOError as err:
@@ -134,17 +134,18 @@ class JobsBaseResource(Resource):
         parser.add_argument("projection", default="")
         parser.add_argument("constraint", default="true")
         args = parser.parse_args()
+        schedd = six.ensure_str(schedd, errors="replace")
         if schedd == "DEFAULT":
             schedd = None
         try:
-            projection = six.ensure_str(args.projection)
-            constraint = six.ensure_str(args.constraint)
+            projection = six.ensure_str(args.projection, errors="replace")
+            constraint = six.ensure_str(args.constraint, errors="replace")
         except UnicodeError as err:
             abort(400, message=str(err))
             return  # quiet warning
         if attribute:
             try:
-                attribute = six.ensure_str(attribute)
+                attribute = six.ensure_str(attribute, errors="replace")
             except UnicodeError as err:
                 abort(400, message=str(err))
             return self.query_attribute(schedd, clusterid, procid, attribute)
