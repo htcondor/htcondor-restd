@@ -1,4 +1,4 @@
 #!/bin/bash
 pip install gunicorn
 pip install -e . || exit $?
-exec gunicorn -w4 -b127.0.0.1:9680 condor_restd:app
+exec gunicorn -w4 -b0.0.0.0:9680 condor_restd:app

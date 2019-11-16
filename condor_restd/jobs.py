@@ -133,12 +133,25 @@ class JobsBaseResource(Resource):
                 attribute = six.ensure_str(attribute)
             except UnicodeError as err:
                 abort(400, message=str(err))
-            return self.query_attribute(clusterid, procid, attribute)
+            qa = self.query_attribute(clusterid, procid, attribute)
+            for i, item in enumerate(qa):
+                qa[i]['classad']['environment'] = 'redacted'
+                qa[i]['classad']['env'] = 'redacted'
+            return qa
         if procid is not None:
-            return self.query_single(clusterid, procid, projection=projection)
-        return self.query_multi(
+            qs = self.query_single(clusterid, procid, projection=projection)
+            for i, item in enumerate(qs):
+
+                qs[i]['classad']['environment'] = 'redacted'
+                qs[i]['classad']['env'] = 'redacted'
+            return qs
+        qm = self.query_multi(
             clusterid, constraint=constraint, projection=projection
         )
+        for i, item in enumerate(qm):
+            qm[i]['classad']['environment'] = 'redacted'
+            qm[i]['classad']['env'] = 'redacted'
+        return qm
 
 
 class V1JobsResource(JobsBaseResource):
