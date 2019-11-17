@@ -1,0 +1,7 @@
+RELEASE NOTES
+
+* __version__ = "0.191001" + 1
+* Added authentication to check for the headers 'Authorization' or 'Authentication'
+* Added authentication to check for cookies
+* You must be an ee2_admin via ee2.is_admin
+* Removed filter for environmental variables which may contain sensitive info
