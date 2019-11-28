@@ -570,13 +570,13 @@ class execution_engine2(object):
     def cancel_job(self, params, context=None):
         """
         Cancels a job. This results in the status becoming "terminated" with termination_code 0.
-        :param params: instance of type "CancelJobParams" (job_id job_id; int
-           terminated; @optional terminated termination_code one of: ""
-           Reasons for why the job was cancelled "" Current Default is
+        :param params: instance of type "CancelJobParams" (cancel_and_sigterm
+           "" Reasons for why the job was cancelled Current Default is
            `terminated_by_user 0` so as to not update narrative client
            terminated_by_user = 0 terminated_by_admin = 1
-           terminated_by_automation = 2) -> structure: parameter "job_id" of
-           type "job_id" (A job id.), parameter "terminated" of Long
+           terminated_by_automation = 2 "" job_id job_id @optional
+           terminated_code) -> structure: parameter "job_id" of type "job_id"
+           (A job id.), parameter "terminated_code" of Long
         """
         return self._client.call_method('execution_engine2.cancel_job',
                                         [params], self._service_ver, context)
@@ -584,13 +584,13 @@ class execution_engine2(object):
     def check_job_canceled(self, params, context=None):
         """
         Check whether a job has been canceled. This method is lightweight compared to check_job.
-        :param params: instance of type "CancelJobParams" (job_id job_id; int
-           terminated; @optional terminated termination_code one of: ""
-           Reasons for why the job was cancelled "" Current Default is
+        :param params: instance of type "CancelJobParams" (cancel_and_sigterm
+           "" Reasons for why the job was cancelled Current Default is
            `terminated_by_user 0` so as to not update narrative client
            terminated_by_user = 0 terminated_by_admin = 1
-           terminated_by_automation = 2) -> structure: parameter "job_id" of
-           type "job_id" (A job id.), parameter "terminated" of Long
+           terminated_by_automation = 2 "" job_id job_id @optional
+           terminated_code) -> structure: parameter "job_id" of type "job_id"
+           (A job id.), parameter "terminated_code" of Long
         :returns: instance of type "CheckJobCanceledResult" (job_id - id of
            job running method finished - indicates whether job is done
            (including error/cancel cases) or not canceled - whether the job
@@ -839,4 +839,16 @@ class execution_engine2(object):
         :returns: instance of type "boolean" (@range [0,1])
         """
         return self._client.call_method('execution_engine2.is_admin',
+                                        [], self._service_ver, context)
+
+    def get_admin_permission(self, context=None):
+        """
+        Check if current user has ee2 admin rights.
+        If so, return the type of rights and their roles
+        :returns: instance of type "AdminRolesResults" (list<string>
+           admin_roles;  # ('ee2_admin','ee2_admin_ro') or something else str
+           permissions; # One of ('read' | 'write' | 'none')) -> structure:
+           parameter "permission" of String
+        """
+        return self._client.call_method('execution_engine2.get_admin_permission',
                                         [], self._service_ver, context)

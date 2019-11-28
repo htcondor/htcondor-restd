@@ -1,5 +1,16 @@
 from __future__ import absolute_import
 
+import logging
+import os
+
+import six
+from flask_restful import Resource, abort, reqparse
+
+
+from . import utils
+from .errors import BAD_ATTRIBUTE_OR_PROJECTION, FAIL_QUERY, NO_JOBS, NO_ATTRIBUTE
+from condor_restd.auth import allowed_access
+
 try:
     from typing import Dict, List, Union
 
@@ -7,16 +18,7 @@ try:
 except ImportError:
     pass
 
-import six
-
-from flask_restful import Resource, abort, reqparse
-import logging
 logging.basicConfig(level=logging.INFO)
-
-from .errors import BAD_ATTRIBUTE_OR_PROJECTION, FAIL_QUERY, NO_JOBS, NO_ATTRIBUTE
-from . import utils
-
-
 
 
 class JobsBaseResource(Resource):
@@ -121,50 +123,7 @@ class JobsBaseResource(Resource):
         else:
             abort(404, message=NO_ATTRIBUTE)
 
-    
-    def allowed_access(self):
-        """
-        Check the request headers or session cookies to check if you are allowed to access the service
-        :return:
-        """
-        parser = reqparse.RequestParser(trim=True)
-        parser.add_argument('Authentication', location='headers')
-        parser.add_argument('Authorization', location='headers')
-        parser.add_argument('kbase_session', location='cookies')
-        parser.add_argument('kbase_session_backup', location='cookies')
-        args = parser.parse_args()
 
-        token = None
-        for item in ("Authentication", "Authorization", "kbase_session", "kbase_session_backup"):
-            if args.get(item) is not None:
-                token = args.get(item)
-                break
-
-        if token is not None:
-            from installed_clients.execution_engine2Client import execution_engine2
-            import os
-            url = os.environ.get('ee2_url', 'https://ci.kbase.us/services/ee2')
-            ee2 = execution_engine2(url=url, token=token)
-            try:
-                if ee2.is_admin() is 1:
-                    return {'is_admin': True}
-                else:
-                    return {'is_admin': False,
-                            'msg': "Sorry, you are not an ee2 admin. Please request an auth role"}
-
-            except Exception as e:
-                return {'is_admin': False,
-                        'error': "Couldn't check admin status", 'url': url, 'token': token,
-                        'tt': type(token), 'exception': f"{e}"}
-        else:
-            return {
-                'is_admin' : False,
-                'msg': 'You must provide an authorization header or be logged in to KBase and have a session cookie',
-                'Authentication': args.get("Authentication"),
-                'Authorization': args.get("Authorization"),
-                'kbase_session': args.get("kbase_session"),
-                'kbase_session_backup': args.get("kbase_session_backup")
-            }
 
     def filter_classads(self, classads):
         """
@@ -179,8 +138,6 @@ class JobsBaseResource(Resource):
             classads[i]['classad']['env'] = 'redacted'
         return classads
 
-
-
     def get(self, clusterid=None, procid=None, attribute=None):
         parser = reqparse.RequestParser(trim=True)
         parser.add_argument("projection", default="")
@@ -194,8 +151,11 @@ class JobsBaseResource(Resource):
             abort(400, message=str(err))
             return  # quiet warning
 
-        aa = self.allowed_access()
-        is_admin = aa['is_admin']
+        aa = allowed_access()
+        is_admin = aa.get('is_admin',False)
+        perm = aa.get('permission')
+        logging.error(aa)
+        logging.info(aa)
         if is_admin is not True:
             return aa
 
@@ -214,7 +174,6 @@ class JobsBaseResource(Resource):
             clusterid, constraint=constraint, projection=projection
         )
         return self.filter_classads(qm)
-
 
 
 class V1JobsResource(JobsBaseResource):
