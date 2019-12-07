@@ -1,7 +1,9 @@
 FROM ubuntu:18.04
 
-# Install commonly used utilties
-RUN apt-get update -y && apt-get install -y vim wget curl 
+# Install commonly used utilties and htcondor
+
+RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+RUN DEBIAN_FRONTEND=noninteractive apt-get update -y && apt-get install -yq vim wget curl htcondor
 
 # Install Python3 and Libraries (source /root/miniconda/bin/activate)
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh \
@@ -19,7 +21,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy over the main app and your customized condor config
 
 COPY . /condor_flask
-COPY condor_configs/condor_config /etc/condor/condor_config
+COPY condor_configs/condor_config.ini /etc/condor/condor_config.ini
 
 CMD [ "/condor_flask/rungunicorn" ]
 
