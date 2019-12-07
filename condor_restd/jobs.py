@@ -1,5 +1,16 @@
 from __future__ import absolute_import
 
+import logging
+import os
+
+import six
+from flask_restful import Resource, abort, reqparse
+
+
+from . import utils
+from .errors import BAD_ATTRIBUTE_OR_PROJECTION, FAIL_QUERY, NO_JOBS, NO_ATTRIBUTE
+from condor_restd.auth import allowed_access
+
 try:
     from typing import Dict, List, Union
 
@@ -7,12 +18,7 @@ try:
 except ImportError:
     pass
 
-import six
-
-from flask_restful import Resource, abort, reqparse
-
-from .errors import BAD_ATTRIBUTE_OR_PROJECTION, FAIL_QUERY, NO_JOBS, NO_ATTRIBUTE
-from . import utils
+logging.basicConfig(level=logging.INFO)
 
 
 class JobsBaseResource(Resource):
@@ -117,28 +123,57 @@ class JobsBaseResource(Resource):
         else:
             abort(404, message=NO_ATTRIBUTE)
 
+
+
+    def filter_classads(self, classads):
+        """
+        Remove attributes that you do not want the service to expose
+
+        :param classads: The classads to filter
+        :return: The filtered classads
+        """
+        # redacted = ['environment','env']
+        for i, item in enumerate(classads):
+            classads[i]['classad']['environment'] = 'redacted'
+            classads[i]['classad']['env'] = 'redacted'
+        return classads
+
     def get(self, clusterid=None, procid=None, attribute=None):
         parser = reqparse.RequestParser(trim=True)
         parser.add_argument("projection", default="")
         parser.add_argument("constraint", default="true")
         args = parser.parse_args()
+
         try:
             projection = six.ensure_str(args.projection)
             constraint = six.ensure_str(args.constraint)
         except UnicodeError as err:
             abort(400, message=str(err))
             return  # quiet warning
+
+        aa = allowed_access()
+        is_admin = aa.get('is_admin',False)
+        perm = aa.get('permission')
+        logging.error(aa)
+        logging.info(aa)
+        if is_admin is not True:
+            return aa
+
         if attribute:
             try:
                 attribute = six.ensure_str(attribute)
             except UnicodeError as err:
                 abort(400, message=str(err))
-            return self.query_attribute(clusterid, procid, attribute)
+            qa = self.query_attribute(clusterid, procid, attribute)
+            return self.filter_classads(qa)
         if procid is not None:
-            return self.query_single(clusterid, procid, projection=projection)
-        return self.query_multi(
+            qs = self.query_single(clusterid, procid, projection=projection)
+            return self.filter_classads(qs)
+
+        qm = self.query_multi(
             clusterid, constraint=constraint, projection=projection
         )
+        return self.filter_classads(qm)
 
 
 class V1JobsResource(JobsBaseResource):

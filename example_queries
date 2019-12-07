@@ -1,0 +1,12 @@
+# Get job 
+http://127.0.0.1:9680/v1/jobs?projection=jobbatchname
+
+# Learn about using constraints at the classad page
+https://htcondor.readthedocs.io/en/latest/misc-concepts/classad-mechanism.html
+
+
+# Get multiple jobs by batch name
+http://127.0.0.1:9680/v1/jobs?constraint=JobBatchName=="225dcc3e1a88aa5c1e3ef4dc3a"
+
+# Get all jobs with multiple attributes, like cpu and memory
+http://127.0.0.1:9680/v1/jobs?constraint=requestcpus==4 && request_memory=2000

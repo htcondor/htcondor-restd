@@ -1,4 +1,6 @@
 #!/bin/bash
 pip install gunicorn
 pip install -e . || exit $?
-exec gunicorn -w4 -b127.0.0.1:9680 condor_restd:app
+/usr/sbin/condor_store_cred -p "${POOL_PASSWORD}" -f /etc/condor/password
+envsubst < /etc/condor/condor_config.ini > /etc/condor/condor_config
+exec gunicorn -w4 -b0.0.0.0:9680 condor_restd:app

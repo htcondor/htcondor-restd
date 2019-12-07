@@ -13,7 +13,7 @@ from classad import ClassAd
 
 from .errors import BAD_ATTRIBUTE_OR_PROJECTION, FAIL_QUERY, NO_CLASSADS
 from . import utils
-
+from condor_restd.auth import allowed_access
 
 class V1StatusResource(Resource):
     """Endpoints for accessing condor_status information; implements the
@@ -47,12 +47,21 @@ class V1StatusResource(Resource):
             "query", choices=list(self.AD_TYPES_MAP.keys()), default="any"
         )
         args = parser.parse_args()
+
+        aa = allowed_access()
+        is_admin = aa.get('is_admin',False)
+        perm = aa.get('permission')
+        if is_admin is not True:
+            return aa
+
         try:
             projection = six.ensure_str(args.projection).lower()
             constraint = six.ensure_str(args.constraint).lower()
         except UnicodeError as err:
             abort(400, message=str(err))
             return  # quiet warning
+
+
 
         collector = Collector()
         ad_type = self.AD_TYPES_MAP[args.query]
