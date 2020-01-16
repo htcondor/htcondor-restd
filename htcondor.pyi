@@ -12,7 +12,6 @@ class AdTypes:
     Collector: Any
     Credd: Any
     Defrag: Any
-    Generic: Any
     Grid: Any
     HAD: Any
     License: Any

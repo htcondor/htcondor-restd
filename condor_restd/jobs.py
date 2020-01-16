@@ -10,6 +10,7 @@ except ImportError:
 import six
 
 from flask_restful import Resource, abort, reqparse
+import classad
 
 from .errors import (
     BAD_ATTRIBUTE_OR_PROJECTION,
@@ -27,10 +28,10 @@ class JobsBaseResource(Resource):
 
     """
 
-    querytype = None
+    querytype = ""
 
     def _query_common(self, schedd_name, constraint, projection):
-        # type: (Optional[str], str, str) -> List[Dict]
+        # type: (Optional[str], str, Optional[str]) -> List[Dict]
         """Return the result of a schedd or history file query with a
         constraint (classad expression) and a projection (comma-separated
         attributes), as a list of dicts.
@@ -48,7 +49,7 @@ class JobsBaseResource(Resource):
         except IOError as err:
             abort(503, message=FAIL_QUERY % {"service": "collector", "err": err})
 
-        projection_list = []
+        projection_list = []  # type: List[str]
         if projection:
             if not utils.validate_projection(projection):
                 abort(400, message=BAD_ATTRIBUTE_OR_PROJECTION)
@@ -68,7 +69,9 @@ class JobsBaseResource(Resource):
             assert False, "Invalid querytype %r" % self.querytype
 
         try:
-            classads = method(requirements=constraint, projection=projection_list)
+            classads = method(
+                requirements=constraint, projection=projection_list
+            )  # type: List[classad.ClassAd]
             return utils.classads_to_dicts(classads)
         except SyntaxError as err:
             abort(400, message=str(err))
