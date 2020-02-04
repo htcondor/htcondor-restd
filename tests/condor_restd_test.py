@@ -76,11 +76,6 @@ def rm_cluster(cluster_id):
 
 
 def _test_jobs_queries(cluster_id, endpoint):
-    queries = [
-        "v1/%s/DEFAULT" % endpoint,
-        "v1/%s/DEFAULT/%d" % (endpoint, cluster_id),
-        "v1/%s/DEFAULT/%d/0" % (endpoint, cluster_id),
-    ]
     check_job_attrs(checked_get_json("v1/%s/DEFAULT" % endpoint)[0])
     check_job_attrs(checked_get_json("v1/%s/DEFAULT/%d" % (endpoint, cluster_id))[0])
     check_job_attrs(checked_get_json("v1/%s/DEFAULT/%d/0" % (endpoint, cluster_id)))
@@ -93,6 +88,20 @@ def test_jobs(fixtures):
     _test_jobs_queries(cluster_id, "jobs")
     rm_cluster(cluster_id)
     _test_jobs_queries(cluster_id, "history")
+
+
+def _test_grouped_jobs_queries(cluster_id, endpoint):
+    check_job_attrs(
+        checked_get_json("v1/%s/DEFAULT/cmd" % endpoint)["/usr/bin/sleep"][0]
+    )
+
+
+def test_grouped_jobs(fixtures):
+    print(checked_get_json("v1/grouped_jobs/DEFAULT/cmd"))
+    cluster_id = submit_sleep_job()
+    _test_grouped_jobs_queries(cluster_id, "grouped_jobs")
+    rm_cluster(cluster_id)
+    _test_grouped_jobs_queries(cluster_id, "grouped_history")
 
 
 def test_config(fixtures):
