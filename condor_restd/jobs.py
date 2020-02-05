@@ -232,6 +232,7 @@ class GroupedJobsBaseResource(Resource):
         parser.add_argument("constraint", default="true")
         args = parser.parse_args()
         schedd = six.ensure_str(schedd, errors="replace")
+        groupby = six.ensure_str(groupby, errors="replace")
         if schedd == "DEFAULT":
             schedd = None
         try:
