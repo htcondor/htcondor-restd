@@ -1,7 +1,7 @@
 swagger: "2.0"
 info:
   title: HTCondor REST API
-  version: "0.191011"
+  version: "0.200204"
 
 host: localhost:9680
 basePath: /v1
