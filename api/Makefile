@@ -61,6 +61,13 @@ $(bindings): swagger.yaml $(generator_jar)
 	fi
 
 
+.PHONY: clean
+clean:
+	-rm -rf $(bindings)
+	-rm -f $(generator_jar)
+	-for x in $(bindings); do rm -rf .$$x.bak; done
+
+
 # List all the makefile targets
 # https://stackoverflow.com/a/26339924
 .PHONY: list
