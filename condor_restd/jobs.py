@@ -40,10 +40,12 @@ def _query_common(querytype, schedd_name, constraint, projection):
     """
     try:
         schedd = utils.get_schedd(schedd_name=schedd_name)
-    except ScheddNotFound as err:
-        abort(400, message="Schedd not found: %s" % err)
+    except ScheddNotFound:
+        abort(400, message="Schedd not found: %s" % schedd_name)
+        raise  # quiet warning
     except IOError as err:
         abort(503, message=FAIL_QUERY % {"service": "collector", "err": err})
+        raise  # quiet warning
 
     projection_list = []  # type: List[str]
     if projection:
@@ -146,15 +148,15 @@ class JobsBaseResource(Resource):
         parser.add_argument("projection", default="")
         parser.add_argument("constraint", default="true")
         args = parser.parse_args()
-        schedd = six.ensure_str(schedd, errors="replace")
-        if schedd == "DEFAULT":
-            schedd = None
         try:
+            schedd = six.ensure_str(schedd, errors="replace")
             projection = six.ensure_str(args.projection, errors="replace")
             constraint = six.ensure_str(args.constraint, errors="replace")
         except UnicodeError as err:
             abort(400, message=str(err))
             return  # quiet warning
+        if schedd == "DEFAULT":
+            schedd = None
         if attribute:
             try:
                 attribute = six.ensure_str(attribute, errors="replace")
@@ -231,16 +233,16 @@ class GroupedJobsBaseResource(Resource):
         parser.add_argument("projection", default="")
         parser.add_argument("constraint", default="true")
         args = parser.parse_args()
-        schedd = six.ensure_str(schedd, errors="replace")
-        groupby = six.ensure_str(groupby, errors="replace")
-        if schedd == "DEFAULT":
-            schedd = None
         try:
+            schedd = six.ensure_str(schedd, errors="replace")
+            groupby = six.ensure_str(groupby, errors="replace")
             projection = six.ensure_str(args.projection, errors="replace")
             constraint = six.ensure_str(args.constraint, errors="replace")
         except UnicodeError as err:
             abort(400, message=str(err))
             return  # quiet warning
+        if schedd == "DEFAULT":
+            schedd = None
         return self.grouped_query_multi(
             schedd, groupby, clusterid, constraint=constraint, projection=projection
         )
