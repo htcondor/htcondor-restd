@@ -204,6 +204,9 @@ class GroupedJobsBaseResource(Resource):
         """Return multiple jobs grouped by `groupby`, optionally constraining
         by `clusterid` in addition to `constraint`.
 
+        Jobs where the `groupby` attribute is undefined are omitted from
+        the result.
+
         """
         if not utils.validate_attribute(groupby):
             abort(400, message=BAD_GROUPBY)
@@ -224,7 +227,8 @@ class GroupedJobsBaseResource(Resource):
                     del ad["procid"]
 
             key = ad.get(groupby, None)
-            grouped_data[key].append(dict(classad=ad, jobid=jobid))
+            if key is not None:
+                grouped_data[key].append(dict(classad=ad, jobid=jobid))
 
         return grouped_data
 

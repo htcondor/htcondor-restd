@@ -122,7 +122,8 @@ The returned object looks like:
     }
 
 Returns an empty object if no jobs match.  Jobs that do not have the
-attribute given in `groupby` are mapped to the `null` key.
+attribute given in `groupby` are omitted from the result.  (This is
+because null is not a valid key.)
 
 `schedd` is the name of the schedd to query, or `DEFAULT` to use
 the default schedd (if there is one). Raises `404` if the schedd
