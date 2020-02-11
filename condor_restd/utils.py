@@ -6,7 +6,7 @@ import json
 import six
 
 try:
-    from typing import Dict, Any, Union, List
+    from typing import Dict, Any, Union, List, Tuple, Set
 except ImportError:
     pass
 
@@ -60,7 +60,12 @@ def validate_attribute(attribute):
 
 
 def validate_projection(projection):
-    """Return True if the given projection has a valid format, i.e.
-    is a comma-separated list of valid attribute names.
+    # type: (str) -> Tuple[bool, Set]
+    """Return True, set() if the given projection has a valid format, i.e.
+    is a comma-separated list of valid attribute names.  Return False,
+    and a set of the invalid attribute names if any are invalid.
     """
-    return all(validate_attribute(x) for x in projection.split(","))
+    bad_attributes = {
+        attr for attr in projection.split(",") if not validate_attribute(attr)
+    }
+    return not bool(bad_attributes), bad_attributes

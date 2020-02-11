@@ -1,7 +1,7 @@
 swagger: "2.0"
 info:
   title: HTCondor REST API
-  version: "0.191011"
+  version: "0.200204"
 
 host: localhost:9680
 basePath: /v1
@@ -17,6 +17,14 @@ tags:
     description: Access to config
 
 responses:
+  groupedJobsOK:
+    description: OK
+    schema:
+      type: object
+      additionalProperties:
+        type: array
+        items:
+          $ref: "#/definitions/job"
   jobsOK:
     description: OK
     schema:
@@ -91,6 +99,12 @@ parameters:
     name: schedd
     type: string
     description: The schedd to query (or "DEFAULT" for the default schedd).
+    required: true
+  groupby:
+    in: path
+    name: groupby
+    type: string
+    description: The attribute to group results by.
     required: true
   projection:
     in: query
@@ -375,6 +389,106 @@ paths:
             $ref: "#/definitions/error"
         404:
           description: No matching jobs, no matching attribute, or schedd not found
+          schema:
+            $ref: "#/definitions/error"
+  /grouped_jobs/{schedd}/{groupby}:
+    get:
+      summary: Returns information for all jobs in the queue for the given schedd, grouped by the given attribute.
+      tags: [jobs]
+      produces: ["application/json"]
+      parameters:
+        - $ref: "#/parameters/schedd"
+        - $ref: "#/parameters/groupby"
+        - $ref: "#/parameters/projection"
+        - $ref: "#/parameters/constraint"
+      responses:
+        200:
+          $ref: "#/responses/groupedJobsOK"
+        400:
+          description: Invalid argument(s)
+          schema:
+            $ref: "#/definitions/error"
+        404:
+          description: Schedd not found
+          schema:
+            $ref: "#/definitions/error"
+  /grouped_jobs/{schedd}/{groupby}{cluster}:
+    get:
+      summary: >-
+        Returns information for jobs in the given cluster in the queue
+        for the given schedd, grouped by the given attribute.
+      tags: [jobs]
+      produces: ["application/json"]
+      parameters:
+        - $ref: "#/parameters/schedd"
+        - $ref: "#/parameters/groupby"
+        - in: path
+          name: cluster
+          type: integer
+          minimum: 0
+          description: The ClusterId of the jobs to return info for
+          required: true
+        - $ref: "#/parameters/projection"
+        - $ref: "#/parameters/constraint"
+      responses:
+        200:
+          $ref: "#/responses/groupedJobsOK"
+        400:
+          description: Invalid argument(s)
+          schema:
+            $ref: "#/definitions/error"
+        404:
+          description: Schedd not found
+          schema:
+            $ref: "#/definitions/error"
+  /grouped_history/{schedd}/{groupby}:
+    get:
+      summary: Returns information for all jobs in the history for the given schedd, grouped by the given attribute.
+      tags: [jobs]
+      produces: ["application/json"]
+      parameters:
+        - $ref: "#/parameters/schedd"
+        - $ref: "#/parameters/groupby"
+        - $ref: "#/parameters/projection"
+        - $ref: "#/parameters/constraint"
+      responses:
+        200:
+          $ref: "#/responses/groupedJobsOK"
+        400:
+          description: Invalid argument(s)
+          schema:
+            $ref: "#/definitions/error"
+        404:
+          description: Schedd not found
+          schema:
+            $ref: "#/definitions/error"
+  /grouped_history/{schedd}/{groupby}{cluster}:
+    get:
+      summary: >-
+        Returns information for jobs in the given cluster in the history file
+        for the given schedd, grouped by the given attribute.
+      tags: [jobs]
+      produces: ["application/json"]
+      parameters:
+        - $ref: "#/parameters/schedd"
+        - $ref: "#/parameters/groupby"
+        - in: path
+          name: cluster
+          type: integer
+          minimum: 0
+          description: The ClusterId of the jobs to return info for
+          required: true
+        - $ref: "#/parameters/projection"
+        - $ref: "#/parameters/constraint"
+      responses:
+        200:
+          $ref: "#/responses/groupedJobsOK"
+        400:
+          description: Invalid argument(s)
+          schema:
+            $ref: "#/definitions/error"
+        404:
+          description: Schedd not found
           schema:
             $ref: "#/definitions/error"
   /status:

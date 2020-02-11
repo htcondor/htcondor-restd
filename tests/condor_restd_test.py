@@ -1,8 +1,6 @@
-import os
 import re
 import socket
 import subprocess
-import time
 
 import htcondor
 import pytest
@@ -61,13 +59,22 @@ def check_job_attrs(job):
         assert job.get(attr), "%s attr missing" % attr
 
 
-def submit_sleep_job():
-    """Submit a sleep job and return the cluster ID"""
-    sub = htcondor.Submit({"Executable": "/usr/bin/sleep", "Arguments": "300"})
+def queue(sub, *args, **kwargs):
     schedd = htcondor.Schedd()
     with schedd.transaction() as txn:
-        cluster_id = sub.queue(txn)
+        cluster_id = sub.queue(txn, *args, **kwargs)
     return cluster_id
+
+
+def submit_job(executable, arguments=""):
+    """Submit a job and return the cluster ID"""
+    sub = htcondor.Submit({"Executable": executable, "Arguments": arguments})
+    return queue(sub)
+
+
+def submit_sleep_job():
+    """Submit a sleep job and return the cluster ID"""
+    return submit_job("/usr/bin/sleep", "300")
 
 
 def rm_cluster(cluster_id):
@@ -76,11 +83,6 @@ def rm_cluster(cluster_id):
 
 
 def _test_jobs_queries(cluster_id, endpoint):
-    queries = [
-        "v1/%s/DEFAULT" % endpoint,
-        "v1/%s/DEFAULT/%d" % (endpoint, cluster_id),
-        "v1/%s/DEFAULT/%d/0" % (endpoint, cluster_id),
-    ]
     check_job_attrs(checked_get_json("v1/%s/DEFAULT" % endpoint)[0])
     check_job_attrs(checked_get_json("v1/%s/DEFAULT/%d" % (endpoint, cluster_id))[0])
     check_job_attrs(checked_get_json("v1/%s/DEFAULT/%d/0" % (endpoint, cluster_id)))
@@ -93,6 +95,35 @@ def test_jobs(fixtures):
     _test_jobs_queries(cluster_id, "jobs")
     rm_cluster(cluster_id)
     _test_jobs_queries(cluster_id, "history")
+
+
+def _test_grouped_jobs_queries(cluster_id, cmd, endpoint):
+    for full_endpoint in (
+        "v1/%s/DEFAULT/cmd" % endpoint,
+        "v1/%s/DEFAULT/cmd/%d" % (endpoint, cluster_id),
+    ):
+        j = checked_get_json(full_endpoint)
+        assert cmd in j, "%s: expected cmd %s does not exist" % (full_endpoint, cmd)
+        assert isinstance(
+            j[cmd], list
+        ), "%s: cmd group for %s does not have expected type" % (full_endpoint, cmd)
+        assert j[cmd], "%s: cmd group for %s is empty" % (full_endpoint, cmd)
+        check_job_attrs(j[cmd][0])
+        assert j[cmd][0]["classad"]["cmd"] == cmd, (
+            "%s: cmd attribute does not match" % full_endpoint
+        )
+
+
+def test_grouped_jobs(fixtures):
+    print(checked_get_json("v1/grouped_jobs/DEFAULT/cmd"))
+    cluster_id = submit_sleep_job()
+    cluster_id_2 = submit_job("/usr/bin/env", "")
+    _test_grouped_jobs_queries(cluster_id, "/usr/bin/sleep", "grouped_jobs")
+    _test_grouped_jobs_queries(cluster_id_2, "/usr/bin/env", "grouped_jobs")
+    rm_cluster(cluster_id)
+    rm_cluster(cluster_id_2)
+    _test_grouped_jobs_queries(cluster_id, "/usr/bin/sleep", "grouped_history")
+    _test_grouped_jobs_queries(cluster_id_2, "/usr/bin/env", "grouped_history")
 
 
 def test_config(fixtures):

@@ -11,7 +11,7 @@ import six
 from htcondor import AdTypes, Collector
 from classad import ClassAd
 
-from .errors import BAD_ATTRIBUTE_OR_PROJECTION, FAIL_QUERY, NO_CLASSADS
+from .errors import BAD_ATTRIBUTE, BAD_PROJECTION, FAIL_QUERY, NO_CLASSADS
 from . import utils
 
 
@@ -59,8 +59,9 @@ class V1StatusResource(Resource):
         projection_list = query_projection_list = []
 
         if projection:
-            if not utils.validate_projection(projection):
-                abort(400, message=BAD_ATTRIBUTE_OR_PROJECTION)
+            valid, badattrs = utils.validate_projection(projection)
+            if not valid:
+                abort(400, message="%s: %s" % (BAD_PROJECTION, ", ".join(badattrs)))
             projection_list = projection.split(",")
             # We need 'name' and 'mytype' in the projection to extract it from the classad
             query_projection_list = list(set(["name", "mytype"] + projection_list))

@@ -94,6 +94,51 @@ does not exist.
 Raises `404` if no such job exists, or if the attribute is undefined.
 
 
+### grouped_jobs and grouped_history
+
+Like `jobs` and `history`, accesses job information.  However, they
+group the returned jobs by an attribute.
+
+`grouped_jobs` and `grouped_history` behave exactly the same, except
+`grouped_jobs` queries jobs in the queue, and `grouped_history`
+queries jobs that have left the queue.
+
+    GET /v1/grouped_jobs/schedd/groupby{/clusterid}{?projection,constraint}
+    GET /v1/grouped_history/schedd/groupby{/clusterid}{?projection,constraint}
+    
+Returns an object of lists of job objects, keyed by the value of the
+attribute given in `groupby`.  A job object looks like:
+
+    {
+      "jobid": "123.45",
+      "classad": { <classad> }
+    }
+
+The returned object looks like:
+
+    {
+      "value1": [ <job objects> ],
+      "value2": [ <job objects> ]
+    }
+
+Returns an empty object if no jobs match.  Jobs that do not have the
+attribute given in `groupby` are omitted from the result.  (This is
+because null is not a valid key.)
+
+`schedd` is the name of the schedd to query, or `DEFAULT` to use
+the default schedd (if there is one). Raises `404` if the schedd
+does not exist.
+
+`clusterid` limits the results to jobs with the given cluster ID.
+
+`projection` is one or more comma-separated attributes; if specified,
+only those attributes, plus the `groupby` attribute, will be in the
+`classad` object of each job.
+
+`constraint` is a classad expression restricting which jobs to include
+in the result.
+
+
 ### config
 
 Access config information (similar to `condor_config_val`).

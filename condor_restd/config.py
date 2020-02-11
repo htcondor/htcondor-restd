@@ -7,7 +7,7 @@ from htcondor import DaemonTypes, Collector, RemoteParam
 
 import htcondor
 
-from .errors import BAD_ATTRIBUTE_OR_PROJECTION, FAIL_QUERY, NO_ATTRIBUTE
+from .errors import BAD_ATTRIBUTE, FAIL_QUERY, NO_ATTRIBUTE
 from . import utils
 
 
@@ -50,12 +50,12 @@ class V1ConfigResource(Resource):
 
         if attribute:
             if not utils.validate_attribute(attribute):
-                abort(400, message=BAD_ATTRIBUTE_OR_PROJECTION)
+                abort(400, message="%s: %s" % (BAD_ATTRIBUTE, attribute))
 
         if attribute:
             try:
                 return param_lower[six.ensure_str(attribute).lower()]
             except KeyError:
-                abort(404, message=NO_ATTRIBUTE)
+                abort(404, message="%s: %s" % (NO_ATTRIBUTE, attribute))
 
         return param_lower
