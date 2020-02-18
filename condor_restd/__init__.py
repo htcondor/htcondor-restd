@@ -25,7 +25,7 @@ from .jobs import (
     V1JobsResource,
     V1HistoryResource,
 )
-from .status import V1StatusResource
+from .status import V1StatusResource, V1GroupedStatusResource
 
 
 app = Flask(__name__)
@@ -65,4 +65,9 @@ api.add_resource(
     "/v1/grouped_history/<schedd>/<groupby>/<int:clusterid>",
 )
 api.add_resource(V1StatusResource, "/v1/status", "/v1/status/<name>")
+api.add_resource(
+    V1GroupedStatusResource,
+    "/v1/grouped_status/<groupby>",
+    "/v1/grouped_status/<groupby>/<name>",
+)
 api.add_resource(V1ConfigResource, "/v1/config", "/v1/config/<attribute>")
