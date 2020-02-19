@@ -166,10 +166,9 @@ class V1GroupedStatusResource(Resource):
             name = ad["name"]
             type_ = ad["mytype"]
             if projection_list:
-                if "name" not in projection_list:
-                    del ad["name"]
-                if "mytype" not in projection_list:
-                    del ad["mytype"]
+                for key in ["name", "mytype"]:
+                    if key not in projection_list and key != groupby:
+                        del ad[key]
 
             # I can't make the JSON encoder use `null` as a key so there's no
             # good way to include the resources where groupby is undefined.

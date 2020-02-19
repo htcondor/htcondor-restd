@@ -222,10 +222,9 @@ class GroupedJobsBaseResource(Resource):
         for ad in ad_dicts:
             jobid = "%(clusterid)s.%(procid)s" % ad
             if projection_list:
-                if "clusterid" not in projection_list:
-                    del ad["clusterid"]
-                if "procid" not in projection_list:
-                    del ad["procid"]
+                for key in "clusterid", "procid":
+                    if key not in projection_list and key != groupby:
+                        del ad[key]
 
             key = ad.get(groupby, None)
             if key is not None:
