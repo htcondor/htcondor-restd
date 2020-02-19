@@ -128,7 +128,7 @@ class V1GroupedStatusResource(Resource):
 
         collector = Collector()
         ad_type = AD_TYPES_MAP[args.query]
-        projection_list = query_projection_list = [groupby]
+        projection_list = query_projection_list = []
 
         if projection:
             valid, badattrs = utils.validate_projection(projection)

@@ -6,6 +6,11 @@ import htcondor
 import pytest
 import requests
 
+try:
+    from typing import *
+except ImportError:
+    pass
+
 
 URIBASE = "http://127.0.0.1:9680"
 
@@ -52,6 +57,19 @@ def test_status(fixtures):
         assert j, "%s: no classads returned" % (daemon)
         for attr in ["name", "classad", "type"]:
             assert j[0].get(attr), "%s: %s attr missing" % (daemon, attr)
+
+
+def test_grouped_status(fixtures):
+    j = checked_get_json("v1/grouped_status/mytype")  # type: Dict
+    assert j, "no grouped classads returned"
+
+    assert "DaemonMaster" in j, "no master ads in result"
+    assert j["DaemonMaster"], "list of startd master ads empty"
+    assert j["DaemonMaster"][0].get("type"), "type missing"
+    assert j["DaemonMaster"][0]["type"] == "DaemonMaster", (
+        "unexpected type. Expected: 'DaemonMaster'. Got: '%s'"
+        % j["DaemonMaster"][0]["type"]
+    )
 
 
 def check_job_attrs(job):
