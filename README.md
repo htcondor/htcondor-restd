@@ -186,3 +186,44 @@ only those attributes will be in the `classad` object of each job.
 
 `constraint` is a classad expression restricting which ads to include
 in the result.
+
+
+### grouped_status
+
+Like `status`, accesses machine and daemon information.  However, it
+groups the returned objects by a classad attribute.
+
+    GET /v1/grouped_status/groupby{/name}{?projection,constraint,query}
+
+Returns an object of lists of status objects, keyed by the value of
+the attribute given in `groupby`.  A status object looks like:
+
+    {
+      "name": "<name classad attribute>",
+      "type": "<ad type>",
+      "classad": { <classad object> }
+    }
+
+The returned object looks like:
+
+    {
+      "value1": [ <status objects> ],
+      "value2": [ <status objects> ]
+    }
+
+Returns an empty object if nothing matches.  Status objects that do
+not have the classad attribute given in `groupby` are omitted from
+the result.  (This is because null is not a valid key.)
+
+`name` is a specific host or slot to query.  If not specified, all
+matching ads are returned.
+
+`query` is the type of ad to query; see the "Query options" in the
+condor_status(1) manpage.  "any" is the default.
+
+`projection` is one or more comma-separated attributes; if specified,
+only those attributes, plus the `groupby` attribute, will be in the
+`classad` object of each job.
+
+`constraint` is a classad expression restricting which ads to include
+in the result.

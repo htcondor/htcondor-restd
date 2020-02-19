@@ -1,7 +1,7 @@
 swagger: "2.0"
 info:
   title: HTCondor REST API
-  version: "0.200204"
+  version: "0.200219"
 
 host: localhost:9680
 basePath: /v1
@@ -25,6 +25,51 @@ responses:
         type: array
         items:
           $ref: "#/definitions/job"
+    examples:
+      application/json:
+        "matyas":
+          - jobid: "110.0"
+            classad:
+              owner: "matyas"
+              cmd: "/usr/bin/sleep"
+          - jobid: "110.1"
+            classad:
+              owner: "matyas"
+              cmd: "/usr/bin/env"
+        "greg":
+          - jobid: "100.0"
+            classad:
+              owner: "greg"
+              cmd: "/bin/bash"
+  groupedStatusOK:
+    description: OK
+    schema:
+      type: object
+      additionalProperties:
+        type: array
+        items:
+          $ref: "#/definitions/status"
+    examples:
+      application/json:
+        "Machine":
+          - name: "slot1@siren.cs.wisc.edu"
+            type: "Machine"
+            classad:
+              cpus: 1
+              memory: 1813
+              state: "Unclaimed"
+          - name: "slot2@siren.cs.wisc.edu"
+            type: "Machine"
+            classad:
+              cpus: 1
+              memory: 1813
+              state: "Unclaimed"
+        "DaemonMaster":
+          - name: "siren.cs.wisc.edu"
+            type: "DaemonMaster"
+            classad:
+              daemonstarttime: 1581950930
+              detectedcpus: 4
   jobsOK:
     description: OK
     schema:
@@ -49,6 +94,11 @@ definitions:
       All attribute names are lowercased.
     type: object
     additionalProperties: true
+    example:
+      owner: "matyas"
+      cmd: "/usr/bin/sleep"
+      clusterid: "110"
+      procid: "0"
   job:
     description: A single HTCondor job
     type: object
@@ -105,6 +155,13 @@ parameters:
     name: groupby
     type: string
     description: The attribute to group results by.
+    required: true
+  name:
+    in: path
+    name: name
+    type: string
+    minimum: 0
+    description: The Name of the associated ad
     required: true
   projection:
     in: query
@@ -513,18 +570,48 @@ paths:
       tags: [status]
       produces: ["application/json"]
       parameters:
-        - in: path
-          name: name
-          type: string
-          minimum: 0
-          description: The Name of the associated ad
-          required: true
+        - $ref: "#/parameters/name"
         - $ref: "#/parameters/projection"
         - $ref: "#/parameters/constraint"
         - $ref: "#/parameters/statusQuery"
       responses:
         200:
           $ref: "#/responses/statusOK"
+        400:
+          description: Invalid argument(s)
+          schema:
+            $ref: "#/definitions/error"
+  /grouped_status/{groupby}:
+    get:
+      summary: Returns condor_status information, grouped by the given attribute
+      tags: [status]
+      produces: ["application/json"]
+      parameters:
+        - $ref: "#/parameters/groupby"
+        - $ref: "#/parameters/projection"
+        - $ref: "#/parameters/constraint"
+        - $ref: "#/parameters/statusQuery"
+      responses:
+        200:
+          $ref: "#/responses/groupedStatusOK"
+        400:
+          description: Invalid argument(s)
+          schema:
+            $ref: "#/definitions/error"
+  /grouped_status/{groupby}/{name}:
+    get:
+      summary: Returns condor_status information, grouped by the given attribute, for the classad with the given name
+      tags: [status]
+      produces: ["application/json"]
+      parameters:
+        - $ref: "#/parameters/groupby"
+        - $ref: "#/parameters/name"
+        - $ref: "#/parameters/projection"
+        - $ref: "#/parameters/constraint"
+        - $ref: "#/parameters/statusQuery"
+      responses:
+        200:
+          $ref: "#/responses/groupedStatusOK"
         400:
           description: Invalid argument(s)
           schema:

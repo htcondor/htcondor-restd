@@ -6,6 +6,11 @@ import htcondor
 import pytest
 import requests
 
+try:
+    from typing import *
+except ImportError:
+    pass
+
 
 URIBASE = "http://127.0.0.1:9680"
 
@@ -54,6 +59,28 @@ def test_status(fixtures):
             assert j[0].get(attr), "%s: %s attr missing" % (daemon, attr)
 
 
+def test_grouped_status(fixtures):
+    j = checked_get_json("v1/grouped_status/MyType")  # type: Dict
+    assert j, "no grouped classads returned"
+
+    assert "DaemonMaster" in j, "no master ads in result"
+    assert j["DaemonMaster"], "list of startd master ads empty"
+    assert j["DaemonMaster"][0].get("type"), "type missing"
+    assert j["DaemonMaster"][0]["type"] == "DaemonMaster", (
+        "unexpected type. Expected: 'DaemonMaster'. Got: '%s'"
+        % j["DaemonMaster"][0]["type"]
+    )
+
+
+def test_grouped_status_with_projection(fixtures):
+    j = checked_get_json("v1/grouped_status/MyType?projection=name")  # type: Dict
+    assert j, "no grouped classads returned"
+
+    assert "DaemonMaster" in j, "no master ads in result"
+    assert j["DaemonMaster"], "list of startd master ads empty"
+    assert j["DaemonMaster"][0].get("name"), "name missing"
+
+
 def check_job_attrs(job):
     for attr in ["classad", "jobid"]:
         assert job.get(attr), "%s attr missing" % attr
@@ -86,8 +113,12 @@ def _test_jobs_queries(cluster_id, endpoint):
     check_job_attrs(checked_get_json("v1/%s/DEFAULT" % endpoint)[0])
     check_job_attrs(checked_get_json("v1/%s/DEFAULT/%d" % (endpoint, cluster_id))[0])
     check_job_attrs(checked_get_json("v1/%s/DEFAULT/%d/0" % (endpoint, cluster_id)))
-    j = checked_get_json("v1/%s/DEFAULT/%d/0/cmd" % (endpoint, cluster_id))
-    assert j == "/usr/bin/sleep", "%s: cmd attribute does not match" % endpoint
+    j1 = checked_get_json("v1/%s/DEFAULT/%d/0/cmd" % (endpoint, cluster_id))
+    j2 = checked_get_json("v1/%s/DEFAULT/%d/0/CMD" % (endpoint, cluster_id))
+    assert j1 == "/usr/bin/sleep", "%s: cmd attribute does not match" % endpoint
+    assert (
+        j2 == "/usr/bin/sleep"
+    ), "%s: cmd attribute when querying for 'CMD' does not match (case not handled?)"
 
 
 def test_jobs(fixtures):
@@ -97,25 +128,27 @@ def test_jobs(fixtures):
     _test_jobs_queries(cluster_id, "history")
 
 
-def _test_grouped_jobs_queries(cluster_id, cmd, endpoint):
+def _test_grouped_jobs_queries(cluster_id, cmd, endpoint, projection=None):
     for full_endpoint in (
         "v1/%s/DEFAULT/cmd" % endpoint,
         "v1/%s/DEFAULT/cmd/%d" % (endpoint, cluster_id),
     ):
-        j = checked_get_json(full_endpoint)
-        assert cmd in j, "%s: expected cmd %s does not exist" % (full_endpoint, cmd)
+        full_query = full_endpoint + (
+            "?projection=%s" % projection if projection else ""
+        )
+        j = checked_get_json(full_query)
+        assert cmd in j, "%s: expected cmd %s does not exist" % (full_query, cmd)
         assert isinstance(
             j[cmd], list
-        ), "%s: cmd group for %s does not have expected type" % (full_endpoint, cmd)
-        assert j[cmd], "%s: cmd group for %s is empty" % (full_endpoint, cmd)
+        ), "%s: cmd group for %s does not have expected type" % (full_query, cmd)
+        assert j[cmd], "%s: cmd group for %s is empty" % (full_query, cmd)
         check_job_attrs(j[cmd][0])
         assert j[cmd][0]["classad"]["cmd"] == cmd, (
-            "%s: cmd attribute does not match" % full_endpoint
+            "%s: cmd attribute does not match" % full_query
         )
 
 
 def test_grouped_jobs(fixtures):
-    print(checked_get_json("v1/grouped_jobs/DEFAULT/cmd"))
     cluster_id = submit_sleep_job()
     cluster_id_2 = submit_job("/usr/bin/env", "")
     _test_grouped_jobs_queries(cluster_id, "/usr/bin/sleep", "grouped_jobs")
@@ -124,6 +157,25 @@ def test_grouped_jobs(fixtures):
     rm_cluster(cluster_id_2)
     _test_grouped_jobs_queries(cluster_id, "/usr/bin/sleep", "grouped_history")
     _test_grouped_jobs_queries(cluster_id_2, "/usr/bin/env", "grouped_history")
+
+
+def test_grouped_jobs_with_projection(fixtures):
+    cluster_id = submit_sleep_job()
+    cluster_id_2 = submit_job("/usr/bin/env", "")
+    _test_grouped_jobs_queries(
+        cluster_id, "/usr/bin/sleep", "grouped_jobs", projection="owner"
+    )
+    _test_grouped_jobs_queries(
+        cluster_id_2, "/usr/bin/env", "grouped_jobs", projection="owner"
+    )
+    rm_cluster(cluster_id)
+    rm_cluster(cluster_id_2)
+    _test_grouped_jobs_queries(
+        cluster_id, "/usr/bin/sleep", "grouped_history", projection="owner"
+    )
+    _test_grouped_jobs_queries(
+        cluster_id_2, "/usr/bin/env", "grouped_history", projection="owner"
+    )
 
 
 def test_config(fixtures):
