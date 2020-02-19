@@ -60,7 +60,7 @@ def test_status(fixtures):
 
 
 def test_grouped_status(fixtures):
-    j = checked_get_json("v1/grouped_status/mytype")  # type: Dict
+    j = checked_get_json("v1/grouped_status/MyType")  # type: Dict
     assert j, "no grouped classads returned"
 
     assert "DaemonMaster" in j, "no master ads in result"
@@ -104,8 +104,12 @@ def _test_jobs_queries(cluster_id, endpoint):
     check_job_attrs(checked_get_json("v1/%s/DEFAULT" % endpoint)[0])
     check_job_attrs(checked_get_json("v1/%s/DEFAULT/%d" % (endpoint, cluster_id))[0])
     check_job_attrs(checked_get_json("v1/%s/DEFAULT/%d/0" % (endpoint, cluster_id)))
-    j = checked_get_json("v1/%s/DEFAULT/%d/0/cmd" % (endpoint, cluster_id))
-    assert j == "/usr/bin/sleep", "%s: cmd attribute does not match" % endpoint
+    j1 = checked_get_json("v1/%s/DEFAULT/%d/0/cmd" % (endpoint, cluster_id))
+    j2 = checked_get_json("v1/%s/DEFAULT/%d/0/CMD" % (endpoint, cluster_id))
+    assert j1 == "/usr/bin/sleep", "%s: cmd attribute does not match" % endpoint
+    assert (
+        j2 == "/usr/bin/sleep"
+    ), "%s: cmd attribute when querying for 'CMD' does not match (case not handled?)"
 
 
 def test_jobs(fixtures):
@@ -133,7 +137,6 @@ def _test_grouped_jobs_queries(cluster_id, cmd, endpoint):
 
 
 def test_grouped_jobs(fixtures):
-    print(checked_get_json("v1/grouped_jobs/DEFAULT/cmd"))
     cluster_id = submit_sleep_job()
     cluster_id_2 = submit_job("/usr/bin/env", "")
     _test_grouped_jobs_queries(cluster_id, "/usr/bin/sleep", "grouped_jobs")
