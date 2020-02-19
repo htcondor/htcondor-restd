@@ -49,8 +49,10 @@ class V1StatusResource(Resource):
         parser.add_argument("query", choices=list(AD_TYPES_MAP.keys()), default="any")
         args = parser.parse_args()
         try:
-            projection = six.ensure_str(args.projection).lower()
-            constraint = six.ensure_str(args.constraint).lower()
+            projection = six.ensure_str(args.projection, errors="replace")
+            constraint = six.ensure_str(args.constraint, errors="replace")
+            if name is not None:
+                name = six.ensure_str(name, errors="replace")
         except UnicodeError as err:
             abort(400, message=str(err))
             return  # quiet warning
@@ -63,7 +65,7 @@ class V1StatusResource(Resource):
             valid, badattrs = utils.validate_projection(projection)
             if not valid:
                 abort(400, message="%s: %s" % (BAD_PROJECTION, ", ".join(badattrs)))
-            projection_list = projection.split(",")
+            projection_list = projection.lower().split(",")
             # We need 'name' and 'mytype' in the projection to extract it from the classad
             query_projection_list = list(set(["name", "mytype"] + projection_list))
 
@@ -117,9 +119,11 @@ class V1GroupedStatusResource(Resource):
         projection = None
         constraint = None
         try:
-            projection = six.ensure_str(args.projection, errors="replace").lower()
-            constraint = six.ensure_str(args.constraint, errors="replace").lower()
-            groupby = six.ensure_str(groupby, errors="replace").lower()
+            projection = six.ensure_str(args.projection, errors="replace")
+            constraint = six.ensure_str(args.constraint, errors="replace")
+            groupby = six.ensure_str(groupby, errors="replace")
+            if name is not None:
+                name = six.ensure_str(name, errors="replace")
         except UnicodeError as err:
             abort(400, message=str(err))
 
@@ -134,7 +138,7 @@ class V1GroupedStatusResource(Resource):
             valid, badattrs = utils.validate_projection(projection)
             if not valid:
                 abort(400, message="%s: %s" % (BAD_PROJECTION, ", ".join(badattrs)))
-            projection_list = projection.split(",")
+            projection_list = projection.lower().split(",")
             # We need 'name' and 'mytype' in the projection to extract it from the classad
             query_projection_list = list(
                 set(["name", "mytype", groupby] + projection_list)
@@ -157,6 +161,7 @@ class V1GroupedStatusResource(Resource):
             return {}
         grouped_data = defaultdict(list)
         ad_dicts = utils.classads_to_dicts(classads)
+        groupby = groupby.lower()
         for ad in ad_dicts:
             name = ad["name"]
             type_ = ad["mytype"]

@@ -218,6 +218,7 @@ class GroupedJobsBaseResource(Resource):
 
         projection_list = projection.lower().split(",") if projection else None
         grouped_data = defaultdict(list)
+        groupby = groupby.lower()
         for ad in ad_dicts:
             jobid = "%(clusterid)s.%(procid)s" % ad
             if projection_list:
