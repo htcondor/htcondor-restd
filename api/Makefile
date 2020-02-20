@@ -41,23 +41,22 @@ $(generator_jar):
 	wget https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/$(OPENAPI_GENERATOR_VERSION)/$(generator_jar)
 
 
-.ONESHELL: $(bindings)
 $(bindings): swagger.yaml $(generator_jar)
-	if [[ -e .$(@).bak ]]; then
-	    rm -rf ".$(@).bak"
-	fi
-	if [[ -e $(@) ]]; then
-	    mv -f "$(@)" ".$(@).bak"
-	fi
-	generator=$(@)
-	if [[ $(@) == go ]]; then
-	    generator=go-experimental
-	fi
-	if java -jar $(generator_jar) generate -g $$generator -o $(@) -i $(<); then
-	    rm -rf ".$(@).bak"
-	else
-	    mv -f ".$(@).bak" "$(@)"
-	    false
+	if [[ -e .$(@).bak ]]; then \
+	    rm -rf ".$(@).bak"; \
+	fi; \
+	if [[ -e $(@) ]]; then \
+	    mv -f "$(@)" ".$(@).bak"; \
+	fi; \
+	generator=$(@); \
+	if [[ $(@) == go ]]; then \
+	    generator=go-experimental; \
+	fi; \
+	if java -jar $(generator_jar) generate -g $$generator -o $(@) -i $(<); then \
+	    rm -rf ".$(@).bak"; \
+	else \
+	    mv -f ".$(@).bak" "$(@)"; \
+	    false; \
 	fi
 
 
