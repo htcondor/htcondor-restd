@@ -23,10 +23,10 @@ def get_schedd(pool=None, schedd_name=None):
         else:
             return htcondor.Schedd()
     except RuntimeError as err:
-        if "unable to locate" in err.message.lower():
+        if "unable to locate" in str(err).lower():
             six.raise_from(ScheddNotFound, err)
     except ValueError as err:
-        if "unable to find" in err.message.lower():
+        if "unable to find" in str(err).lower():
             six.raise_from(ScheddNotFound, err)
 
 
