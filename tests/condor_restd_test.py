@@ -12,6 +12,9 @@ except ImportError:
     pass
 
 
+# TODO Use the webapp factory model so we can test the app directly.
+#  This described at https://flask.palletsprojects.com/en/1.1.x/tutorial/factory/#the-application-factory.
+#  The factory should reload the condor config (htcondor.reload_config()) when run.
 URIBASE = "http://127.0.0.1:9680"
 
 
