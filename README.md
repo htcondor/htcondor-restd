@@ -32,6 +32,25 @@ For additional scalability, run using a WSGI server such as gunicorn:
 These commands will run the server on port 9680.
 
 
+Configuration
+-------------
+The RESTD is configured using HTCondor configuration; see
+[the configuration section of the HTCondor manual](https://htcondor.readthedocs.io/en/latest/admin-manual/introduction-to-configuration.html)
+for general configuration information.  Note that RESTD-specific
+parameters are not listed in the manual yet.
+
+If you do not have permission to edit HTCondor configuration, use the
+`_CONDOR_*` environment variables to configure the RESTD.  For example,
+set the value for `RESTD_MAX_JOBS` by setting the environment variable
+`_CONDOR_RESTD_MAX_JOBS`.
+
+The following HTCondor configuration values apply:
+
+- `CONDOR_HOST`: The hostname of the HTCondor central manager.
+- `RESTD_MAX_JOBS`: The maximum number of jobs returned for jobs,
+  grouped_jobs, history, and grouped_history queries.
+
+
 Queries
 -------
 The following queries are implemented.  Arguments in brackets `{}` are optional:
