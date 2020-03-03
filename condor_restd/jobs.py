@@ -13,6 +13,7 @@ import six
 
 from flask_restful import Resource, abort, reqparse
 import classad
+import htcondor
 
 from .errors import (
     BAD_ATTRIBUTE,
@@ -26,8 +27,8 @@ from .errors import (
 from . import utils
 
 
-def _query_common(querytype, schedd_name, constraint, projection):
-    # type: (str, Optional[str], str, Optional[str]) -> List[Dict]
+def _query_common(querytype, schedd_name, constraint, projection, limit=None):
+    # type: (str, Optional[str], str, Optional[str], Optional[int]) -> List[Dict]
     """Return the result of a schedd or history file query with a
     constraint (classad expression) and a projection (comma-separated
     attributes), as a list of dicts.
@@ -58,19 +59,41 @@ def _query_common(querytype, schedd_name, constraint, projection):
             set(["clusterid", "procid"] + projection.lower().split(","))
         )
 
-    if querytype == "history":
-        method = schedd.history
-        service = "history file"
-    elif querytype == "xquery":
-        method = schedd.xquery
-        service = "schedd"
-    else:
-        assert False, "Invalid querytype %r" % querytype
-
+    restd_max_jobs = htcondor.param.get("RESTD_MAX_JOBS", None)
+    max_limit = -1
     try:
-        classads = method(
-            requirements=constraint, projection=projection_list
-        )  # type: List[classad.ClassAd]
+        if restd_max_jobs is not None:
+            max_limit = max(int(restd_max_jobs), -1)
+    except TypeError:
+        abort(503, message="Bad value for RESTD_MAX_JOBS: %s" % restd_max_jobs)
+
+    if limit is None:
+        limit = max_limit
+    else:
+        try:
+            limit = int(limit)
+        except TypeError:
+            abort(400, message="Bad value for limit: %s" % limit)
+        if limit < 0:
+            limit = max_limit
+        elif max_limit > -1 and limit > max_limit:
+            limit = max_limit
+
+    service = ""
+    try:
+        # history query uses "match", jobs query uses "limit"
+        if querytype == "history":
+            service = "history file"
+            classads = schedd.history(
+                requirements=constraint, projection=projection_list, match=limit
+            )  # type: List[classad.ClassAd]
+        elif querytype == "xquery":
+            service = "schedd"
+            classads = schedd.xquery(
+                requirements=constraint, projection=projection_list, limit=limit
+            )  # type: List[classad.ClassAd]
+        else:
+            assert False, "Invalid querytype %r" % querytype
         return utils.classads_to_dicts(classads)
     except SyntaxError as err:
         abort(400, message=str(err))
@@ -94,7 +117,13 @@ class JobsBaseResource(Resource):
         """
         if clusterid is not None:
             constraint += " && clusterid==%d" % clusterid
-        ad_dicts = _query_common(self.querytype, schedd, constraint, projection)
+        ad_dicts = _query_common(
+            self.querytype,
+            schedd_name=schedd,
+            constraint=constraint,
+            projection=projection,
+            limit=None,
+        )
 
         projection_list = projection.lower().split(",") if projection else None
         data = []
@@ -117,6 +146,7 @@ class JobsBaseResource(Resource):
             schedd,
             "clusterid==%d && procid==%d" % (clusterid, procid),
             projection,
+            limit=1,
         )
         if ad_dicts:
             ad = ad_dicts[0]
@@ -214,7 +244,13 @@ class GroupedJobsBaseResource(Resource):
             constraint += " && clusterid==%d" % clusterid
         if projection:
             projection += "," + groupby
-        ad_dicts = _query_common(self.querytype, schedd, constraint, projection)
+        ad_dicts = _query_common(
+            self.querytype,
+            schedd_name=schedd,
+            constraint=constraint,
+            projection=projection,
+            limit=None,
+        )
 
         projection_list = projection.lower().split(",") if projection else None
         grouped_data = defaultdict(list)
