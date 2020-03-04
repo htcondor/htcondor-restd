@@ -79,6 +79,9 @@ def _query_common(querytype, schedd_name, constraint, projection, limit=None):
         elif max_limit > -1 and limit > max_limit:
             limit = max_limit
 
+    restd_hide_job_attrs = htcondor.param.get("RESTD_HIDE_JOB_ATTRS", "")
+    restd_hide_job_attrs_list = utils.str_to_list(str(restd_hide_job_attrs).lower())
+
     service = ""
     try:
         # history query uses "match", jobs query uses "limit"
@@ -94,7 +97,12 @@ def _query_common(querytype, schedd_name, constraint, projection, limit=None):
             )  # type: List[classad.ClassAd]
         else:
             assert False, "Invalid querytype %r" % querytype
-        return utils.classads_to_dicts(classads)
+        classad_dicts = utils.classads_to_dicts(classads)
+        for ad in classad_dicts:
+            for attr in restd_hide_job_attrs_list:
+                if attr in ad:
+                    ad[attr] = "<REDACTED>"
+        return classad_dicts
     except SyntaxError as err:
         abort(400, message=str(err))
     except (IOError, RuntimeError) as err:

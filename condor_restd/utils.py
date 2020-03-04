@@ -54,6 +54,11 @@ def classads_to_dicts(classads):
     return [deep_lcasekeys(json.loads(ad.printJson())) for ad in classads]
 
 
+def str_to_list(the_str):
+    # type: (str) -> List[str]
+    return [x for x in re.split(r"[ \t,]+", the_str) if x]
+
+
 def validate_attribute(attribute):
     """Return True if the given attribute is a valid classad attribute name"""
     return bool(re.match(r"[A-Za-z_][A-Za-z0-9_]*$", attribute))

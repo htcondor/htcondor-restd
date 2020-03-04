@@ -47,6 +47,9 @@ set the value for `RESTD_MAX_JOBS` by setting the environment variable
 The following HTCondor configuration values apply:
 
 - `CONDOR_HOST`: The hostname of the HTCondor central manager.
+- `RESTD_HIDE_JOB_ATTRS`: A comma or space-separated list of job
+  attributes to redact from queries.  Attributes in this list will
+  show the value `<REDACTED>` in the jobs and history endpoints.
 - `RESTD_MAX_JOBS`: The maximum number of jobs returned for jobs,
   grouped_jobs, history, and grouped_history queries.
 
