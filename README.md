@@ -6,7 +6,7 @@ Currently allows read-only queries for jobs (in-queue and historical),
 configuration, and machine status.
 
 NOTE: The API has not stabilized yet and queries are subject to change.
-Do not use in production.
+Do not use it in production.
 
 
 Installation
@@ -144,7 +144,7 @@ The returned object looks like:
     }
 
 Returns an empty object if no jobs match.  Jobs that do not have the
-attribute given in `groupby` are omitted from the result.  (This is
+attributes given in `groupby` are omitted from the result.  (This is
 because null is not a valid key.)
 
 `schedd` is the name of the schedd to query, or `DEFAULT` to use
