@@ -2,3 +2,4 @@ openapi-generator-cli-*.jar
 go/
 java/
 python/
+javascript/

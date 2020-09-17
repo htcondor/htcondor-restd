@@ -6,7 +6,7 @@ echotbl:=@printf "%-20s %s\n"
 
 SHELL:=bash
 
-bindings:=java go python
+bindings:=java go python javascript
 generator_jar:=openapi-generator-cli-$(OPENAPI_GENERATOR_VERSION).jar
 
 .PHONY: help
