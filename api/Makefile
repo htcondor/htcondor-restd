@@ -1,5 +1,5 @@
 #!/usr/bin/make -f
-OPENAPI_GENERATOR_VERSION:=4.2.3
+OPENAPI_GENERATOR_VERSION:=4.3.1
 
 echo:=@echo
 echotbl:=@printf "%-20s %s\n"
