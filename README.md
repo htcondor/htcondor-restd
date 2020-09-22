@@ -65,8 +65,8 @@ Access job information (similar to `condor_q` and `condor_history`).
 `jobs` and `history` behave exactly the same, except `jobs` queries jobs in the queue,
 and `history` queries jobs that have left the queue.
 
-    GET /v1/jobs/schedd{/clusterid}{?projection,constraint}
-    GET /v1/history/schedd{/clusterid}{?projection,constraint}
+    GET /v1/jobs/{schedd}{/clusterid}{?projection,constraint}
+    GET /v1/history/{schedd}{/clusterid}{?projection,constraint}
 
 Returns a list of job objects.  A job object looks like
 
@@ -89,8 +89,8 @@ only those attributes will be in the `classad` object of each job.
 `constraint` is a classad expression restricting which jobs to include
 in the result.
 
-    GET /v1/jobs/schedd/clusterid/procid{?projection}
-    GET /v1/history/schedd/clusterid/procid{?projection}
+    GET /v1/jobs/{schedd}/{clusterid}/{procid}{?projection}
+    GET /v1/history/{schedd}/{clusterid}/{procid}{?projection}
 
 Returns a single job object with cluster ID given by `clusterid` and
 the proc ID given by `procid`.
@@ -103,8 +103,8 @@ does not exist.
 `projection` is one or more comma-separated attributes; if specified,
 only those attributes will be in the `classad` object of the job.
 
-    GET /v1/jobs/schedd/clusterid/procid/attribute
-    GET /v1/history/schedd/clusterid/procid/attribute
+    GET /v1/jobs/{schedd}/{clusterid}/{procid}/{attribute}
+    GET /v1/history/{schedd}/{clusterid}/{procid}/{attribute}
 
 Returns a single attribute of a job with cluster ID given by `clusterid`,
 proc ID given by `procid`, and attribute name given by `attribute`.
@@ -125,9 +125,9 @@ group the returned jobs by an attribute.
 `grouped_jobs` queries jobs in the queue, and `grouped_history`
 queries jobs that have left the queue.
 
-    GET /v1/grouped_jobs/schedd/groupby{/clusterid}{?projection,constraint}
-    GET /v1/grouped_history/schedd/groupby{/clusterid}{?projection,constraint}
-    
+    GET /v1/grouped_jobs/{schedd}/{groupby}{/clusterid}{?projection,constraint}
+    GET /v1/grouped_history/{schedd}/{groupby}{/clusterid}{?projection,constraint}
+
 Returns an object of lists of job objects, keyed by the value of the
 attribute given in `groupby`.  A job object looks like:
 
@@ -215,7 +215,7 @@ in the result.
 Like `status`, accesses machine and daemon information.  However, it
 groups the returned objects by a classad attribute.
 
-    GET /v1/grouped_status/groupby{/name}{?projection,constraint,query}
+    GET /v1/grouped_status/{groupby}{/name}{?projection,constraint,query}
 
 Returns an object of lists of status objects, keyed by the value of
 the attribute given in `groupby`.  A status object looks like:
