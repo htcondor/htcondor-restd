@@ -7,6 +7,7 @@ configuration, and machine status.
 """
 from __future__ import absolute_import
 
+import json
 
 try:
     from typing import Dict, List, Optional, Union
@@ -15,7 +16,7 @@ try:
 except ImportError:
     pass
 
-from flask import Flask
+from flask import Flask, make_response
 from flask_restful import Resource, Api
 
 from .config import V1ConfigResource
@@ -30,6 +31,18 @@ from .status import V1StatusResource, V1GroupedStatusResource
 
 app = Flask(__name__)
 api = Api(app)
+
+
+# Add the HTTP header to make queries work from any site.
+# This is OK for a public API: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS/Errors/CORSMissingAllowOrigin
+
+
+@api.representation("application/json")
+def output_json(data, code, headers=None):
+    resp = make_response(json.dumps(data), code)
+    resp.headers.extend(headers or {})
+    resp.headers["Access-Control-Allow-Origin"] = "*"
+    return resp
 
 
 class RootResource(Resource):
