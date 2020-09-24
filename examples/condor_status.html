@@ -1,0 +1,106 @@
+<!doctype html>
+<!--
+  condor_status.html
+
+  This is a small example to demonstrate how to use the HTCondor RESTD from JavaScript
+  using jQuery.  It creates a table with output similar to what calling `condor_status`
+  from the command line produces.
+
+  Set the constant NETLOC to the host:port of your RESTD.
+-->
+
+<html>
+  <head>
+    <title>condor_status</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+    <script>
+
+      // This should be the host and port you're running the RESTD on.
+
+      const NETLOC = "localhost:9680";
+
+    </script>
+  </head>
+  <body>
+
+    <!-- Table headers -->
+
+    <table class="statusTable">
+      <tr>
+        <th>Name</th>
+        <th>OpSys</th>
+        <th>Arch</th>
+        <th>State</th>
+        <th>Activity</th>
+        <th>LoadAv</th>
+        <th>Mem</th>
+        <th>ActvtyTime</th>
+      </tr>
+    </table>
+
+    <!-- Script to fill in the rest of the table -->
+    <script>
+      $( document ).ready(function () {
+        // Query the collector for startd ads.
+        $.getJSON( "http://" + NETLOC + "/v1/status?query=startd" )
+          .done(function( data ) {
+            // Data now contains an array of objects built from classads.
+            // Each object has a field "name" with the name of the ad (in this case,
+            // the slot name), a field "type" with the type of ad (in this case,
+            // "Machine"), and a field "classad" that contains the set of attributes
+            // listed in the "projection" argument, or all attributes if projection
+            // is not specified.
+            var newTableItems = [];
+            var newRowString = "";
+            data.forEach(function(item) {
+              var newRowItems = [];
+              var classad = item.classad;
+              // Note: all classad attribute names are lowercase.  (Classad keys are
+              // case-insensitive, but JSON is not.)
+              // mycurrenttime and enteredcurrentactivity are Unix timestamps.
+              var activityTime = formatTime(classad.mycurrenttime - classad.enteredcurrentactivity);
+
+              var attribs = [
+                  item.name
+                , classad.opsys
+                , classad.arch
+                , classad.state
+                , classad.activity
+                , classad.loadavg
+                , classad.memory
+                , activityTime
+                ];
+              attribs.forEach(function(attrib) {
+                newRowItems.push( "<td>" + attrib + "</td>" );
+              });
+              newRowString = "<tr>" + newRowItems.join( "" ) + "</tr>";
+              newTableItems.push( newRowString );
+            });
+            $( ".statusTable" ).append( newTableItems.join( "" ) );
+          });
+      });
+
+
+
+      // Returns the time formatted according to how condor_status does it:
+      // DAYS+HOURS:MINUTES:SECONDS.  `aTime` is the total time in seconds.
+      function formatTime( aTime ) {
+        var secs = aTime % 60;
+        if (secs < 10) {
+          secs = "0" + secs;
+        };
+        var mins = ((aTime / 60) | 0) % 60;
+        if (mins < 10) {
+          mins = "0" + mins;
+        };
+        var hrs = ((aTime / 3600) | 0) % 24;
+        if (hrs < 10) {
+          hrs = "0" + hrs;
+        };
+        var days = (aTime / 86400) | 0;
+
+        return days + "+" + hrs + ":" + mins + ":" + secs;
+      };
+    </script>
+  </body>
+</html>
