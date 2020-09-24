@@ -43,8 +43,8 @@
       $( document ).ready(function () {
         // Query the collector for startd ads.
         $.getJSON( "http://" + NETLOC + "/v1/status?query=startd" )
-          .done(function( data ) {
-            // Data now contains an array of objects built from classads.
+          .done(function( slots ) {
+            // slots now contains an array of objects built from startd ads.
             // Each object has a field "name" with the name of the ad (in this case,
             // the slot name), a field "type" with the type of ad (in this case,
             // "Machine"), and a field "classad" that contains the set of attributes
@@ -52,7 +52,7 @@
             // is not specified.
             var newTableItems = [];
             var newRowString = "";
-            data.forEach(function(item) {
+            slots.forEach(function(item) {
               var newRowItems = [];
               var classad = item.classad;
               // Note: all classad attribute names are lowercase.  (Classad keys are
