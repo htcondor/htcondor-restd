@@ -31,6 +31,9 @@ For additional scalability, run using a WSGI server such as gunicorn:
 
 These commands will run the server on port 9680.
 
+NOTE: Running the htcondor-restd as root is not recommended.  This
+readme assumes that you are running the restd as the unprivileged user
+`restd`.
 
 Configuration
 -------------
@@ -39,10 +42,19 @@ The RESTD is configured using HTCondor configuration; see
 for general configuration information.  Note that RESTD-specific
 parameters are not listed in the manual yet.
 
-If you do not have permission to edit HTCondor configuration, use the
-`_CONDOR_*` environment variables to configure the RESTD.  For example,
-set the value for `RESTD_MAX_JOBS` by setting the environment variable
-`_CONDOR_RESTD_MAX_JOBS`.
+If you do not have permission to edit global HTCondor configuration,
+you may configure the RESTD in one of two ways, as described in the
+[Ordered Evaluation to Set the Configuration](https://htcondor.readthedocs.io/en/latest/admin-manual/introduction-to-configuration.html#ordered-evaluation-to-set-the-configuration)
+section of the HTCondor manual:
+
+1. Adding the options to the user configuration file for the user
+running the restd, in `$HOME/.config/user_config` (or the location
+defined by `USER_CONFIG_FILE`).  This is recommended for non-container
+installs.
+
+2. Using the `_CONDOR_*` environment variables. For example, set
+the value for `RESTD_MAX_JOBS` by setting the environment variable
+`_CONDOR_RESTD_MAX_JOBS`.  This is recommended for container installs.
 
 The following HTCondor configuration values apply:
 
