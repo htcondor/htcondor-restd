@@ -1,4 +1,3 @@
-
 #!/usr/bin/env bash
 
 if [ "$CONDOR_JWT_TOKEN" ] ; then

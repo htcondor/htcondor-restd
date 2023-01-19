@@ -1,5 +1,8 @@
 FROM kbase/sdkpython:3.8.0
 
+COPY . /condor-rest-api
+WORKDIR /condor-rest-api
+
 RUN apt-get update -y && apt-get install -y vim wget
 RUN curl -fsSL https://get.htcondor.org |  /bin/bash -s -- --no-dry-run
 RUN pip install --no-cache-dir -r requirements.txt
