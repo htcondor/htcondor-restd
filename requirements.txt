@@ -1,3 +1,4 @@
-flask
+requirements.txtflask
 flask-restful
 htcondor
+gunicorn
