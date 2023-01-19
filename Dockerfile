@@ -10,10 +10,11 @@ RUN useradd restd
 RUN chown restd entrypoint.sh
 
 USER restd
+ENV WORKDIR="/condor-rest-api"
 ENV FLASK_APP="condor_restd flask run -p 5000"
 ENV _CONDOR_CONDOR_HOST="condor:9618"
 ENV _CONDOR_RESTD_HIDE_JOB_ATTRS="condor:9618"
 
 
-ENTRYPOINT ["entrypoint.sh"]
+ENTRYPOINT ["/condor-rest-api/entrypoint.sh"]
 
