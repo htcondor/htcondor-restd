@@ -1,4 +1,4 @@
-FROM python:3
+FROM kbase/sdkpython:3.8.0 
 
 COPY . /condor_flask
 WORKDIR /condor_flask
@@ -9,5 +9,5 @@ RUN useradd restd
 
 
 USER restd
-ENV FLASK_APP=condor_restd flask run -p 5000
+ENV FLASK_APP="condor_restd flask run -p 5000"
 CMD [ "gunicorn -w4 -b127.0.0.1:5000 condor_restd:app ]
