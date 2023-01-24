@@ -16,6 +16,7 @@ workers=${WORKERS:-$calc_workers}
 
 gunicorn \
   --access-logfile - \
+  --error-logfile - \
   --timeout 1800 \
   --workers $workers \
   --bind :5000 \
