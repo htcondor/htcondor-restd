@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
+# This startup script expects you to run as the restd user
 
 if [ "$CONDOR_JWT_TOKEN" ] ; then
-     mkdir -p /home/restd/.condor/tokens.d
      echo "$CONDOR_JWT_TOKEN" > /home/restd/.condor/tokens.d/JWT
-     chown restd /home/restd/.condor/tokens.d/JWT
      chmod 600 /home/restd/.condor/tokens.d/JWT
 fi
 
@@ -12,7 +11,6 @@ fi
 calc_workers="$(($(nproc) * 2 + 1))"
 # Use the WORKERS environment variable, if present
 workers=${WORKERS:-$calc_workers}
-
 
 gunicorn \
   --access-logfile - \
