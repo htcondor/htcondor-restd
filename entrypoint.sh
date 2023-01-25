@@ -4,8 +4,8 @@
 if [ "$CONDOR_JWT_TOKEN" ] ; then
      mkdir -p /home/restd/.condor/tokens.d
      echo "$CONDOR_JWT_TOKEN" > /home/restd/.condor/tokens.d/JWT
-     chown restd -R /home/restd/.condor/
-     chmod 600 -R /home/restd/.condor/
+     chown restd:restd /home/restd/.condor/tokens.d/JWT
+     chmod 600 -R /home/restd/.condor/tokens.d/JWT
 fi
 
 # Set the number of gevent workers to number of cores * 2 + 1
