@@ -6,9 +6,6 @@ RUN curl -fsSL https://get.htcondor.org |  /bin/bash -s -- --no-dry-run
 RUN useradd -m restd
 COPY --chown=restd:restd . /condor-rest-api
 
-
-USER restd
-RUN mkdir -p ~/.condor/tokens.d
 ENV WORKDIR="/condor-rest-api"
 ENV FLASK_APP="condor_restd flask run -p 5000"
 ENV _CONDOR_CONDOR_HOST="condor:9618"

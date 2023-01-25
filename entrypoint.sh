@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
-# This startup script expects you to run as the restd user
 
+#Setup tokens in restd home directory
 if [ "$CONDOR_JWT_TOKEN" ] ; then
+     RUN mkdir -p /home/restd/.condor/tokens.d
      echo "$CONDOR_JWT_TOKEN" > /home/restd/.condor/tokens.d/JWT
-     chmod 600 /home/restd/.condor/tokens.d/JWT
+     chown restd -R /home/restd/.condor/
+     chmod 600 -R /home/restd/.condor/
 fi
 
 # Set the number of gevent workers to number of cores * 2 + 1
@@ -14,7 +16,8 @@ workers=${WORKERS:-$calc_workers}
 
 . ./venv/bin/activate
 
-gunicorn \
+exec gunicorn \
+  --user restd \
   --access-logfile - \
   --error-logfile - \
   --timeout 1800 \
