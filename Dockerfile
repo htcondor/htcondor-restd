@@ -9,8 +9,8 @@ COPY --chown=restd:restd condor_config /etc/condor/condor_config
 
 ENV WORKDIR="/condor-rest-api"
 ENV FLASK_APP="condor_restd flask run -p 5000"
-ENV _CONDOR_CONDOR_HOST="condor:9618"
-ENV _CONDOR_RESTD_HIDE_JOB_ATTRS="condor:9618"
+# ENV _CONDOR_CONDOR_HOST="condor:9618"
+ENV _CONDOR_RESTD_HIDE_JOB_ATTRS="environment"
 
 WORKDIR /condor-rest-api
 RUN python -m venv venv && . venv/bin/activate && pip install --no-cache-dir -r requirements.txt
