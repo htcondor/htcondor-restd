@@ -15,8 +15,7 @@ ENV _CONDOR_CONDOR_HOST="condor:9618"
 ENV _CONDOR_RESTD_HIDE_JOB_ATTRS="condor:9618"
 
 WORKDIR /condor-rest-api
-
-RUN pip install --no-cache-dir -r requirements.txt
+RUN python -m venv venv && . venv/bin/activate && pip install --no-cache-dir -r requirements.txt
 
 ENTRYPOINT ["/condor-rest-api/entrypoint.sh"]
 

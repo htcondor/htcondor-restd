@@ -12,6 +12,8 @@ calc_workers="$(($(nproc) * 2 + 1))"
 # Use the WORKERS environment variable, if present
 workers=${WORKERS:-$calc_workers}
 
+. ./venv/bin/activate
+
 gunicorn \
   --access-logfile - \
   --error-logfile - \
