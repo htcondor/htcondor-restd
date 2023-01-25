@@ -2,7 +2,7 @@
 
 #Setup tokens in restd home directory
 if [ "$CONDOR_JWT_TOKEN" ] ; then
-     RUN mkdir -p /home/restd/.condor/tokens.d
+     mkdir -p /home/restd/.condor/tokens.d
      echo "$CONDOR_JWT_TOKEN" > /home/restd/.condor/tokens.d/JWT
      chown restd -R /home/restd/.condor/
      chmod 600 -R /home/restd/.condor/
