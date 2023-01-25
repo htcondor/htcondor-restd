@@ -3,3 +3,4 @@
 # But this file is automatically included as part of the Dockerfile
 SCHEDD_HOST=kbase@condor
 COLLECTOR_HOST=condor:9618
+RESTD_HIDE_JOB_ATTRS=environment
