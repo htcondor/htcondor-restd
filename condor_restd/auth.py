@@ -1,9 +1,10 @@
 import os
+from functools import wraps
+
+import requests
 from flask import request
 from flask_restful import abort
 
-from functools import wraps
-from flask import request
 
 # Checks whether you have the correct EE2 admin role and permissions to use this API
 # A certain chat robot helped me write this decorator
