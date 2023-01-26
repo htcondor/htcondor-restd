@@ -25,6 +25,7 @@ from .errors import (
     ScheddNotFound,
 )
 from . import utils
+from .auth import authorized
 
 
 def _query_common(querytype, schedd_name, constraint, projection, limit=None):
@@ -181,6 +182,7 @@ class JobsBaseResource(Resource):
         else:
             abort(404, message=NO_ATTRIBUTE)
 
+    @authorized
     def get(self, schedd, clusterid=None, procid=None, attribute=None):
         parser = reqparse.RequestParser(trim=True)
         parser.add_argument("projection", default="")
@@ -276,6 +278,7 @@ class GroupedJobsBaseResource(Resource):
 
         return grouped_data
 
+    @authorized
     def get(self, schedd, groupby, clusterid=None):
         parser = reqparse.RequestParser(trim=True)
         parser.add_argument("projection", default="")

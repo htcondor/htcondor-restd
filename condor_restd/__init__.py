@@ -27,7 +27,7 @@ from .jobs import (
     V1HistoryResource,
 )
 from .status import V1StatusResource, V1GroupedStatusResource
-
+from .auth import authorized
 
 app = Flask(__name__)
 api = Api(app)
@@ -46,6 +46,7 @@ def output_json(data, code, headers=None):
 
 
 class RootResource(Resource):
+    @authorized
     def get(self):
         return {}
 
