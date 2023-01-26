@@ -46,13 +46,11 @@ def output_json(data, code, headers=None):
 
 
 class RootResource(Resource):
-    @authorized
     def get(self):
         return {}
 
 
 api.add_resource(RootResource, "/")
-
 
 api.add_resource(
     V1JobsResource,
