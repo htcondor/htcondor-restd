@@ -1,0 +1,6 @@
+# This can be overwritten by service definitions or configmaps
+# This file can be mounted at /etc/condor/condor_config or /etc/condor/condor_config.local
+# But this file is automatically included as part of the Dockerfile
+SCHEDD_HOST=kbase@condor
+COLLECTOR_HOST=condor:9618
+RESTD_HIDE_JOB_ATTRS=environment

@@ -9,6 +9,14 @@ NOTE: The API has not stabilized yet and queries are subject to change.
 Do not use in production.
 
 
+KBase Specific Configuration Information
+-----------
+* To specify the auth url set `AUTH_URL`
+* To specify the jwt token used to connect to condor specify `CONDOR_JWT_TOKEN`
+* To specify which condor collector, schedd, and which variables are redacted (e.g. `environment`), modify the condor_config either here, or mount it in via a ConfigMap
+* This api is protected via AUTH Roles, and checks to see if you have the proper EE2 Role to allow you access to this api
+* For information about where python and its dependencies are installed, see the `Dockerfile` and `entrypoint.sh`
+
 Installation
 ------------
 Installation requires the following Python modules:

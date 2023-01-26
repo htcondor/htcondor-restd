@@ -1,13 +1,16 @@
-FROM python:3
+FROM kbase/sdkpython:3.8.0
 
-COPY . /condor_flask
-WORKDIR /condor_flask
-RUN pip install --no-cache-dir -r requirements.txt
-RUN apt-get update -y && apt-get install -y vim wget 
-RUN apt-get install --yes htcondor
-RUN useradd restd
+RUN apt-get update -y && apt-get install -y vim wget
+RUN curl -fsSL https://get.htcondor.org |  /bin/bash -s -- --no-dry-run
 
+RUN useradd -m restd
+COPY --chown=restd:restd . /condor-rest-api
+COPY --chown=restd:restd condor_config /etc/condor/condor_config
 
-USER restd
-ENV FLASK_APP=condor_restd flask run -p 5000
-CMD [ "gunicorn -w4 -b127.0.0.1:5000 condor_restd:app ]
+ENV WORKDIR="/condor-rest-api"
+ENV FLASK_APP="condor_restd flask run -p 5000"
+WORKDIR /condor-rest-api
+RUN python -m venv venv && . venv/bin/activate && pip install --no-cache-dir -r requirements.txt
+
+ENTRYPOINT ["/condor-rest-api/entrypoint.sh"]
+

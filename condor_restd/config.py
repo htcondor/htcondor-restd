@@ -9,7 +9,7 @@ import htcondor
 
 from .errors import BAD_ATTRIBUTE, FAIL_QUERY, NO_ATTRIBUTE
 from . import utils
-
+from .auth import authorized
 
 class V1ConfigResource(Resource):
     """Endpoints for accessing condor config; implements the /v1/config
@@ -25,6 +25,7 @@ class V1ConfigResource(Resource):
         "startd": DaemonTypes.Startd,
     }
 
+    @authorized
     def get(self, attribute=None):
         """GET handler"""
         parser = reqparse.RequestParser(trim=True)

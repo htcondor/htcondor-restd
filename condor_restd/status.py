@@ -15,6 +15,7 @@ from classad import ClassAd
 
 from .errors import BAD_GROUPBY, BAD_PROJECTION, FAIL_QUERY, NO_CLASSADS
 from . import utils
+from .auth import authorized
 
 
 AD_TYPES_MAP = {
@@ -40,7 +41,7 @@ class V1StatusResource(Resource):
     /v1/status endpoints.
 
     """
-
+    @authorized
     def get(self, name=None):
         """GET handler"""
         parser = reqparse.RequestParser(trim=True)
@@ -105,6 +106,7 @@ class V1GroupedStatusResource(Resource):
 
     """
 
+    @authorized
     def get(self, groupby, name=None):
         # type: (str, Optional[str]) -> Dict[str, List[Dict]]
         """GET handler
