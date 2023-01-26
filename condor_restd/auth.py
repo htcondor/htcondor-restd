@@ -12,7 +12,7 @@ def authorized(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         if 'kbase_session' in request.cookies:
-            token = cookies.get("kbase_session")
+            token = request.cookies.get("kbase_session")
             ret = requests.get(
                 os.environ.get("AUTH_URL", "http://auth2:8080") + "/api/V2/me", headers={"Authorization": token}
             )
