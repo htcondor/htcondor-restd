@@ -44,9 +44,9 @@ class V1StatusResource(Resource):
     def get(self, name=None):
         """GET handler"""
         parser = reqparse.RequestParser(trim=True)
-        parser.add_argument("projection", default="")
-        parser.add_argument("constraint", default="")
-        parser.add_argument("query", choices=list(AD_TYPES_MAP.keys()), default="any")
+        parser.add_argument("projection", default="", location='args')
+        parser.add_argument("constraint", default="", location='args')
+        parser.add_argument("query", location='args', choices=list(AD_TYPES_MAP.keys()), default="any")
         args = parser.parse_args()
         try:
             projection = six.ensure_str(args.projection, errors="replace")
@@ -112,9 +112,9 @@ class V1GroupedStatusResource(Resource):
         Return multiple resources grouped by `groupby`.
         """
         parser = reqparse.RequestParser(trim=True)
-        parser.add_argument("projection", default="")
-        parser.add_argument("constraint", default="")
-        parser.add_argument("query", choices=list(AD_TYPES_MAP.keys()), default="any")
+        parser.add_argument("projection", location='args', default="")
+        parser.add_argument("constraint", location='args', default="")
+        parser.add_argument("query", location='args', choices=list(AD_TYPES_MAP.keys()), default="any")
         args = parser.parse_args()
         projection = None
         constraint = None
