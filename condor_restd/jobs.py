@@ -183,8 +183,8 @@ class JobsBaseResource(Resource):
 
     def get(self, schedd, clusterid=None, procid=None, attribute=None):
         parser = reqparse.RequestParser(trim=True)
-        parser.add_argument("projection", default="")
-        parser.add_argument("constraint", default="true")
+        parser.add_argument("projection", location="args", default="")
+        parser.add_argument("constraint", location="args", default="true")
         args = parser.parse_args()
         try:
             schedd = six.ensure_str(schedd, errors="replace")
@@ -278,8 +278,8 @@ class GroupedJobsBaseResource(Resource):
 
     def get(self, schedd, groupby, clusterid=None):
         parser = reqparse.RequestParser(trim=True)
-        parser.add_argument("projection", default="")
-        parser.add_argument("constraint", default="true")
+        parser.add_argument("projection", location="args", default="")
+        parser.add_argument("constraint", location="args", default="true")
         args = parser.parse_args()
         try:
             schedd = six.ensure_str(schedd, errors="replace")
