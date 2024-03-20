@@ -28,7 +28,7 @@ class V1ConfigResource(Resource):
     def get(self, attribute=None):
         """GET handler"""
         parser = reqparse.RequestParser(trim=True)
-        parser.add_argument("daemon", choices=list(self.DAEMON_TYPES_MAP.keys()))
+        parser.add_argument("daemon", location="args", choices=list(self.DAEMON_TYPES_MAP.keys()))
         args = parser.parse_args()
 
         param = None
