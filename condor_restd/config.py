@@ -3,9 +3,12 @@ from __future__ import absolute_import
 from flask_restful import Resource, reqparse, abort
 import six
 
-from htcondor import DaemonTypes, Collector, RemoteParam
-
-import htcondor
+try:
+    from htcondor2 import DaemonTypes, Collector, RemoteParam
+    import htcondor2 as htcondor
+except:
+    from htcondor import DaemonTypes, Collector, RemoteParam
+    import htcondor
 
 from .errors import BAD_ATTRIBUTE, FAIL_QUERY, NO_ATTRIBUTE
 from . import utils
