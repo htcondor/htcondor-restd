@@ -12,8 +12,13 @@ except ImportError:
 import six
 
 from flask_restful import Resource, abort, reqparse
-import classad
-import htcondor
+
+try:
+    import classad2 as classad
+    import htcondor2 as htcondor
+except:
+    import classad
+    import htcondor
 
 from .errors import (
     BAD_ATTRIBUTE,
