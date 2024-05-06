@@ -6,11 +6,10 @@ to the Condor daemons for queue, machine, and config information.
 """
 
 from setuptools import setup
-from condor_restd.version import __version__
 
 setup(
     name="HTCondor-RESTD",
-    version=__version__,
+    version="0.200924",
     long_description=__doc__,
     packages=["condor_restd"],
     include_package_data=True,
