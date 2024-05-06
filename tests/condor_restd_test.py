@@ -96,8 +96,8 @@ def check_job_attrs(job):
 
 def queue(sub, *args, **kwargs):
     schedd = htcondor.Schedd()
-    with schedd.transaction() as txn:
-        cluster_id = sub.queue(txn, *args, **kwargs)
+    submitresult = schedd.submit(sub, *args, **kwargs)
+    cluster_id = submitresult.cluster()
     return cluster_id
 
 
