@@ -6,7 +6,7 @@ import six
 try:
     from htcondor2 import DaemonTypes, Collector, RemoteParam
     import htcondor2 as htcondor
-except:
+except ImportError:
     from htcondor import DaemonTypes, Collector, RemoteParam
     import htcondor
 

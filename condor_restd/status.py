@@ -13,7 +13,7 @@ import six
 try:
     from htcondor2 import AdTypes, Collector
     from classad2 import ClassAd
-except:
+except ImportError:
     from htcondor import AdTypes, Collector
     from classad import ClassAd
 

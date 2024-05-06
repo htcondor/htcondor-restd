@@ -16,7 +16,7 @@ from flask_restful import Resource, abort, reqparse
 try:
     import classad2 as classad
     import htcondor2 as htcondor
-except:
+except ImportError:
     import classad
     import htcondor
 
