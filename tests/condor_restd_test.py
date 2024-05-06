@@ -2,7 +2,12 @@ import re
 import socket
 import subprocess
 
-import htcondor
+try:
+    import htcondor2 as htcondor
+    print("Using HTCondor Python bindings version 2")
+except ImportError:
+    import htcondor
+    print("Using HTCondor Python bindings version 1")
 import pytest
 import requests
 
