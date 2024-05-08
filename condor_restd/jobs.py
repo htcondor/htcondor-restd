@@ -12,8 +12,13 @@ except ImportError:
 import six
 
 from flask_restful import Resource, abort, reqparse
-import classad
-import htcondor
+
+try:
+    import classad2 as classad
+    import htcondor2 as htcondor
+except ImportError:
+    import classad
+    import htcondor
 
 from .errors import (
     BAD_ATTRIBUTE,
@@ -88,12 +93,12 @@ def _query_common(querytype, schedd_name, constraint, projection, limit=None):
         if querytype == "history":
             service = "history file"
             classads = schedd.history(
-                requirements=constraint, projection=projection_list, match=limit
+                constraint=constraint, projection=projection_list, match=limit
             )  # type: List[classad.ClassAd]
-        elif querytype == "xquery":
+        elif querytype == "query":
             service = "schedd"
-            classads = schedd.xquery(
-                requirements=constraint, projection=projection_list, limit=limit
+            classads = schedd.query(
+                constraint=constraint, projection=projection_list, limit=limit
             )  # type: List[classad.ClassAd]
         else:
             assert False, "Invalid querytype %r" % querytype
@@ -214,7 +219,7 @@ class V1JobsResource(JobsBaseResource):
 
     """
 
-    querytype = "xquery"
+    querytype = "query"
 
 
 class V1HistoryResource(JobsBaseResource):
@@ -302,7 +307,7 @@ class V1GroupedJobsResource(GroupedJobsBaseResource):
 
     """
 
-    querytype = "xquery"
+    querytype = "query"
 
 
 class V1GroupedHistoryResource(GroupedJobsBaseResource):

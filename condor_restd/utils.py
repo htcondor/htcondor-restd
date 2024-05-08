@@ -1,7 +1,12 @@
 import re
 
-import classad
-import htcondor
+try:
+    import classad2 as classad
+    import htcondor2 as htcondor
+except ImportError:
+    import classad
+    import htcondor
+
 import json
 import six
 

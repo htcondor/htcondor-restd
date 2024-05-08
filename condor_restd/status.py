@@ -10,8 +10,12 @@ except ImportError:
 from flask_restful import Resource, reqparse, abort
 import six
 
-from htcondor import AdTypes, Collector
-from classad import ClassAd
+try:
+    from htcondor2 import AdTypes, Collector
+    from classad2 import ClassAd
+except ImportError:
+    from htcondor import AdTypes, Collector
+    from classad import ClassAd
 
 from .errors import BAD_GROUPBY, BAD_PROJECTION, FAIL_QUERY, NO_CLASSADS
 from . import utils
