@@ -15,7 +15,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=[
-        "flask==3.*",
+        "flask>=2.0.0",
         "flask-restful==0.3.10",
         "htcondor>=10.0.0",
     ],

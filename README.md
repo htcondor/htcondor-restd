@@ -12,7 +12,7 @@ Installation
 Installation requires the following Python modules:
 
 - `htcondor >= 10.0.0`
-- `flask 3.x`
+- `flask 2+`
 - `flask-restful 0.3.10`
 
 Install them via `pip` or your OS's package manager.
