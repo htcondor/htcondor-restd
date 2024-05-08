@@ -9,10 +9,14 @@ from setuptools import setup
 
 setup(
     name="HTCondor-RESTD",
-    version="0.200924",
+    version="0.240508",
     long_description=__doc__,
     packages=["condor_restd"],
     include_package_data=True,
     zip_safe=False,
-    install_requires=["flask", "flask-restful", "htcondor>=8.9.2"],
+    install_requires=[
+        "flask==3.*",
+        "flask-restful==0.3.10",
+        "htcondor>=10.0.0",
+    ],
 )
