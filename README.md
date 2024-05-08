@@ -11,7 +11,7 @@ Installation
 ------------
 Installation requires the following Python modules:
 
-- `htcondor >= 8.9.2`
+- `htcondor >= 10.0.0`
 - `flask`
 - `flask-restful`
 
