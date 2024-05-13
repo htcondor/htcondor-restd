@@ -48,7 +48,7 @@ app.logger.info("Using HTCondor Python bindings version %d", BINDINGS_VERSION)
 
 @api.representation("application/json")
 def output_json(data, code, headers=None):
-    resp = make_response(json.dumps(data), code)
+    resp = make_response(json.dumps(data) + "\n", code)
     resp.headers.extend(headers or {})
     resp.headers["Access-Control-Allow-Origin"] = "*"
     return resp
